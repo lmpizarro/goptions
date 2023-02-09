@@ -85,11 +85,18 @@ func Gamma(S, K, T, r, sigma, q float64) float64 {
 	return math.Exp(-q*T) * np(d1) / (S*sigma*math.Sqrt(T))
 }
 
-func Theta(tipo string, S, K, T, r, sigma, q float64, NDY int) float64 {
+func Theta(tipo string, S, K, T, r, sigma, q float64, calendar bool) float64 {
 	/*
 	Theta is the first derivative of option price with respect to time to expiration T.
 	*/
 	var theta float64
+	var NDY float64
+
+	if calendar {
+		NDY = 365.0
+	} else {
+		NDY = 252.0
+	}
 
 	dist := distuv.Normal{
 		Mu:    0,
@@ -103,11 +110,11 @@ func Theta(tipo string, S, K, T, r, sigma, q float64, NDY int) float64 {
 	temp := gamma * math.Pow(S*sigma,2) / 2
 
 	if tipo == "C" {
-		theta = (1.0/float64(NDY)) * (-temp - r*K*math.Exp(-r*T)*dist.CDF(d2) + q*S*math.Exp(-q*T)*dist.CDF(d1))
+		theta = (-temp - r*K*math.Exp(-r*T)*dist.CDF(d2) + q*S*math.Exp(-q*T)*dist.CDF(d1))
 	} else if tipo == "P" {
-		theta = (1.0/float64(NDY)) * (-temp + r*K*math.Exp(-r*T)*dist.CDF(-d2) - q*S*math.Exp(-q*T)*dist.CDF(-d1))
+		theta = (-temp + r*K*math.Exp(-r*T)*dist.CDF(-d2) - q*S*math.Exp(-q*T)*dist.CDF(-d1))
 	}
-	return theta
+	return theta / NDY
 }
 
 func Rho(tipo string, S, K, T, r, sigma, q float64) float64 {

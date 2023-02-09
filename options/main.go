@@ -83,7 +83,6 @@ func fetch_options(symbol, expirationF string, S0 float64) CallPut {
 	if iter.Err() != nil {
 		panic("error iter")
 	}
-
 	for _, e := range straddles {
 		call := e.Call
 		put := e.Put
@@ -135,8 +134,8 @@ func main() {
 	IV = libs.IvBsNewton("P", S0, 100, 1, 0.04, q, PBs, .2)
 	fmt.Println("IV ", IV)
 
-	thetaC := libs.Theta("C", S0, 100, 1, 0.04, sigma, q, 365)
-	thetaP := libs.Theta("P", S0, 100, 1, 0.04, sigma, q, 365)
+	thetaC := libs.Theta("C", S0, 100, 1, 0.04, sigma, q, true)
+	thetaP := libs.Theta("P", S0, 100, 1, 0.04, sigma, q, true)
 
 	fmt.Println(thetaC, thetaP)
 
@@ -144,6 +143,17 @@ func main() {
 	rhoP := libs.Rho("P", S0, 100, 1, 0.04, sigma, q)
 
 	fmt.Println(rhoC, rhoP)
+
+	gamma = libs.Gamma(49, 50, 0.3846, 0.05, .2, 0.0)
+	thetaC = libs.Theta("C", 49, 50, 0.3846, 0.05, .2, 0, true)
+	deltaCBs = libs.Delta("C", 49, 50, 0.3846, 0.05, .2, 0)
+	rhoC = libs.Rho("C", 49, 50, 0.3846, 0.05, .2, 0)
+
+	fmt.Println("\t Options, Futures, Derivatives 9th ed, J.C. Hull")
+	fmt.Println("gamma Hull pag 415", gamma)
+	fmt.Println("theta Hull pag 409", thetaC)
+	fmt.Println("delta Hull pag 428", deltaCBs)
+	fmt.Println("rho Hull pag 440", rhoC)
 
 
 }
