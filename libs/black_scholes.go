@@ -5,15 +5,15 @@ import (
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
-func d1(S, K, T, r, sigma, div float64) float64 {
-	return (math.Log(S/K) + (r-div+0.5*sigma*sigma)*T) / sigma / math.Sqrt(T)
+func d1(S, K, T, r, sigma, q float64) float64 {
+	return (math.Log(S/K) + (r-q+0.5*sigma*sigma)*T) / sigma / math.Sqrt(T)
 }
 
-func d2(S, K, T, r, sigma, div float64) float64 {
-	return d1(S, K, T, r, sigma, div ) - sigma * math.Sqrt(T)
+func d2(S, K, T, r, sigma, q float64) float64 {
+	return d1(S, K, T, r, sigma, q ) - sigma * math.Sqrt(T)
 }
 
-func Bs(tipo string, S, K, T, r, sigma, div float64) float64 {
+func Bs(tipo string, S, K, T, r, sigma, q float64) float64 {
 
 	/*
 	Def
@@ -37,18 +37,18 @@ func Bs(tipo string, S, K, T, r, sigma, div float64) float64 {
 
 	var price float64
 
-	d1 := d1(S, K, T, r, sigma, div)
-	d2 := d2(S, K, T, r, sigma, div)
+	d1 := d1(S, K, T, r, sigma, q)
+	d2 := d2(S, K, T, r, sigma, q)
 
 	if tipo == "C" {
-		price = math.Exp(-div*T)*S*dist.CDF(d1) - K*math.Exp(-r*T)*dist.CDF(d2)
+		price = math.Exp(-q*T)*S*dist.CDF(d1) - K*math.Exp(-r*T)*dist.CDF(d2)
 	} else if tipo == "P" {
-		price = K*math.Exp(-r*T)*dist.CDF(-d2) - S*math.Exp(-div*T)*dist.CDF(-d1)
+		price = K*math.Exp(-r*T)*dist.CDF(-d2) - S*math.Exp(-q*T)*dist.CDF(-d1)
 	}
 	return price
 }
 
-func Delta(tipo string, S, K, T, r, sigma, div float64) float64 {
+func Delta(tipo string, S, K, T, r, sigma, q float64) float64 {
 	/*
 	Delta is the first derivative of option price with respect to underlying price S.
 	*/
@@ -61,12 +61,12 @@ func Delta(tipo string, S, K, T, r, sigma, div float64) float64 {
 
 	var delta float64
 
-	d1 := d1(S, K, T, r, sigma, div)
+	d1 := d1(S, K, T, r, sigma, q)
 
 	if tipo == "C" {
-		delta = math.Exp(-div*T) * dist.CDF(d1)
+		delta = math.Exp(-q*T) * dist.CDF(d1)
 	} else if tipo == "P" {
-		delta = -math.Exp(-div*T) * dist.CDF(-d1)
+		delta = -math.Exp(-q*T) * dist.CDF(-d1)
 	}
 
 	return delta
@@ -76,16 +76,16 @@ func np(x float64) float64{
 	return math.Exp(-math.Pow(x, 2)/2) / math.Sqrt((2*math.Pi))
 }
 
-func Gamma(S, K, T, r, sigma, div float64) float64 {
+func Gamma(S, K, T, r, sigma, q float64) float64 {
 	/*
 	Gamma is the second derivative of option price with
 	respect to underlying price S. It is the same for calls and puts.
 	*/
-	d1 := d1(S, K, T, r, sigma, div)
-	return math.Exp(-div*T) * np(d1) / (S*sigma*math.Sqrt(T))
+	d1 := d1(S, K, T, r, sigma, q)
+	return math.Exp(-q*T) * np(d1) / (S*sigma*math.Sqrt(T))
 }
 
-func Theta(tipo string, S, K, T, r, sigma, div float64, NDY int) float64 {
+func Theta(tipo string, S, K, T, r, sigma, q float64, NDY int) float64 {
 	/*
 	Theta is the first derivative of option price with respect to time to expiration T.
 	*/
@@ -96,21 +96,21 @@ func Theta(tipo string, S, K, T, r, sigma, div float64, NDY int) float64 {
 		Sigma: 1,
 	}
 
-	d1 := d1(S, K, T, r, sigma, div)
-	d2 := d2(S, K, T, r, sigma, div)
+	d1 := d1(S, K, T, r, sigma, q)
+	d2 := d2(S, K, T, r, sigma, q)
 
-	gamma := Gamma(S, K, T, r, sigma, div)
+	gamma := Gamma(S, K, T, r, sigma, q)
 	temp := gamma * math.Pow(S*sigma,2) / 2
 
 	if tipo == "C" {
-		theta = (1.0/float64(NDY)) * (-temp - r*K*math.Exp(-r*T)*dist.CDF(d2) + div*S*math.Exp(-div*T)*dist.CDF(d1))
+		theta = (1.0/float64(NDY)) * (-temp - r*K*math.Exp(-r*T)*dist.CDF(d2) + q*S*math.Exp(-q*T)*dist.CDF(d1))
 	} else if tipo == "P" {
-		theta = (1.0/float64(NDY)) * (-temp + r*K*math.Exp(-r*T)*dist.CDF(-d2) - div*S*math.Exp(-div*T)*dist.CDF(-d1))
+		theta = (1.0/float64(NDY)) * (-temp + r*K*math.Exp(-r*T)*dist.CDF(-d2) - q*S*math.Exp(-q*T)*dist.CDF(-d1))
 	}
 	return theta
 }
 
-func Rho(tipo string, S, K, T, r, sigma, div float64) float64 {
+func Rho(tipo string, S, K, T, r, sigma, q float64) float64 {
 	/*
 	Rho is the first derivative of option price with respect to interest rate r
 	*/
@@ -120,7 +120,7 @@ func Rho(tipo string, S, K, T, r, sigma, div float64) float64 {
 		Sigma: 1,
 	}
 
-	d2 := d2(S, K, T, r, sigma, div)
+	d2 := d2(S, K, T, r, sigma, q)
 
 	var rho float64
 
@@ -133,24 +133,24 @@ func Rho(tipo string, S, K, T, r, sigma, div float64) float64 {
 	return rho
 }
 
-func Vega(S, K, T, r, sigma, div float64) float64{
+func Vega(S, K, T, r, sigma, q float64) float64{
 	/*
     Vega is the first derivative of option price with respect to volatility σ.
 	It is the same for calls and puts.
 	*/
-	d1 := d1(S, K, T, r, sigma, div)
-	return S * math.Exp(-div*T) * math.Sqrt(T) * np(d1)
+	d1 := d1(S, K, T, r, sigma, q)
+	return S * math.Exp(-q*T) * math.Sqrt(T) * np(d1)
 
 }
 
-func IvBsNewton(tipo string, S, K, T, r, div, price, sigma0 float64) float64 {
+func IvBsNewton(tipo string, S, K, T, r, q, price, sigma0 float64) float64 {
 	var (
 		price0 float64
 		vega0 float64
 	)
 	for {
-		price0 = Bs(tipo, S, K, T, r, sigma0, div)
-		vega0 = Vega(S, K, T, r, sigma0, div)
+		price0 = Bs(tipo, S, K, T, r, sigma0, q)
+		vega0 = Vega(S, K, T, r, sigma0, q)
 		sigma0 = sigma0 - ((price0 - price)/ vega0)
 		if (price0 - price) < 0.01 {
 			break
@@ -159,7 +159,7 @@ func IvBsNewton(tipo string, S, K, T, r, div, price, sigma0 float64) float64 {
 	return sigma0
 }
 
-func IV_Bs(tipo string, S, K, T, r, div, price float64) float64 {
+func IV_Bs(tipo string, S, K, T, r, q, price float64) float64 {
 	var diff float64
 
 	s_high := 10.0
@@ -167,7 +167,7 @@ func IV_Bs(tipo string, S, K, T, r, div, price float64) float64 {
 	sigma := .5 * (s_low + s_high)
 
 	for i := 0; i < 1000; i++ {
-		diff = Bs(tipo, S, K, T, r, sigma, div) - price
+		diff = Bs(tipo, S, K, T, r, sigma, q) - price
 		if diff > 0 {
 			s_high = sigma
 			sigma = .5 * (s_low + s_high)
