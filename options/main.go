@@ -102,6 +102,9 @@ func fetch_options(symbol, expirationF string, S0 float64) CallPut {
 
 func main() {
 
+	params := libs.Parameters{S: 100.0, K: 100.0,
+		Tipo: "C", T: 1, Sigma: .4, Q: 0.01}
+
 	S0 := 100.0
 	q := 0.01
 	sigma := 0.4
@@ -116,11 +119,12 @@ func main() {
 
 	fmt.Println("hi C ", CBs, deltaCBs)
 
-	fmt.Println("diff delta ", deltaCBs - deltaPBs)
+	fmt.Println("diff delta ", deltaCBs-deltaPBs)
 
-	C := libs.Bin("P", S0, 100, 1, 0.04, sigma, 0.01, 150)
+	C := libs.Bin(&params, 150)
 	fmt.Println("hi C Bin", C)
-	P := libs.Bin("C", S0, 100, 1, 0.04, sigma, 0.01, 150)
+	params.Tipo = "P"
+	P := libs.Bin(&params, 150)
 	fmt.Println("hi P Bin", P)
 
 	gamma := libs.Gamma(S0, 100, 1, 0.04, sigma, q)
@@ -155,11 +159,9 @@ func main() {
 	fmt.Println("delta Hull pag 428", deltaCBs)
 	fmt.Println("rho Hull pag 440", rhoC)
 
-
 }
 
-
-func cal_IV () {
+func cal_IV() {
 	symbol := "SPY"
 
 	q, err := quote.Get(symbol)

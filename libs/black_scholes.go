@@ -194,15 +194,14 @@ func IV_Bs(tipo string, S, K, T, r, q, price float64) float64 {
 }
 
 type Parameters struct {
-	Tipo, Method           string
-	S, K, T, R, Sigma, Div float64
-	Steps                  int
+	Tipo           string
+	S, K, T, R, Sigma, Q float64
 }
 
-func (p Parameters) Price() float64{
-	if p.Method == "BIN" {
-		return Bin(p.Tipo, p.S, p.K, p.T, p.R, p.Sigma, p.Div, p.Steps)
+func (p *Parameters) Price(method string, steps int) float64{
+	if method == "BIN" {
+		return Bin(p, steps)
 	} else {
-		return Bs(p.Tipo, p.S, p.K, p.T, p.R, p.Sigma, p.Div)
+		return Bs(p.Tipo, p.S, p.K, p.T, p.R, p.Sigma, p.Q)
 	}
 }
