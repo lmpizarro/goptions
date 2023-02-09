@@ -79,12 +79,12 @@ func Gamma(S, K, T, r, sigma, div float64) float64 {
 
 func Theta(tipo string, S, K, T, r, sigma, div float64, NDY int) float64 {
 
+	var theta float64
+
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
 	}
-
-
 
 	d1 := d1(S, K, T, r, sigma, div)
 	d2 := d2(S, K, T, r, sigma, div)
@@ -92,10 +92,36 @@ func Theta(tipo string, S, K, T, r, sigma, div float64, NDY int) float64 {
 	gamma := Gamma(S, K, T, r, sigma, div)
 	temp := gamma * math.Pow(S*sigma,2) / 2
 
-	return math.Exp(-div*T) * np(d1) / (S*sigma*math.Sqrt(T))
+	if tipo == "C" {
+		theta = (1.0/float64(NDY)) * (-temp - r*K*math.Exp(-r*T)*dist.CDF(d2) + div*S*math.Exp(-div*T)*dist.CDF(d1))
+	} else {
+		theta = (1.0/float64(NDY)) * (-temp + r*K*math.Exp(-r*T)*dist.CDF(-d2) - div*S*math.Exp(-div*T)*dist.CDF(-d1))
+	}
+	return theta
 }
 
+func Rho(tipo string, S, K, T, r, sigma, div float64) float64 {
+	/*
+	Rho is the first derivative of option price with respect to interest rate r
+	*/
 
+	dist := distuv.Normal{
+		Mu:    0,
+		Sigma: 1,
+	}
+
+	d2 := d2(S, K, T, r, sigma, div)
+
+	var rho float64
+
+	if tipo == "C" {
+		rho = K * T * math.Exp(-r*T)*dist.CDF(d2) / 100
+	} else {
+		rho = -K * T * math.Exp(-r*T)*dist.CDF(-d2) / 100
+	}
+
+	return rho
+}
 func Vega(S, K, T, r, sigma, div float64) float64{
 
 	d1 := d1(S, K, T, r, sigma, div)

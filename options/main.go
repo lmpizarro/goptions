@@ -101,14 +101,12 @@ func fetch_options(symbol, expirationF string, S0 float64) CallPut {
 	return cp
 }
 
-
-
 func main() {
 
 	S0 := 100.0
 	q := 0.01
 	sigma := 0.4
-	
+
 	PBs := libs.Bs("P", S0, 100, 1, 0.04, sigma, q)
 	deltaPBs := libs.Delta("P", S0, 100, 1, 0.04, sigma, q)
 
@@ -121,22 +119,32 @@ func main() {
 
 	fmt.Println("diff delta ", deltaCBs - deltaPBs)
 
+	C := libs.Bin("P", S0, 100, 1, 0.04, sigma, 0.01, 150)
+	fmt.Println("hi C Bin", C)
+	P := libs.Bin("C", S0, 100, 1, 0.04, sigma, 0.01, 150)
+	fmt.Println("hi P Bin", P)
+
 	gamma := libs.Gamma(S0, 100, 1, 0.04, sigma, q)
 	fmt.Println("gamma ", gamma)
 	vega := libs.Vega(S0, 100, 1, 0.04, sigma, q)
 	fmt.Println("vega ", vega)
-
-
-	C := libs.Bin("P", 100, 100, 1, 0.04, 0.2, 0.01, 150)
-	fmt.Println("hi ", C)
-	C = libs.Bin("P", 100, 100, 1, 0.04, 0.11, 0.01, 150)
-	fmt.Println("hi ", C)
 
 	IV := libs.IV_Bs("P", S0, 100, 1, 0.04, q, PBs)
 	fmt.Println("IV ", IV)
 
 	IV = libs.IvBsNewton("P", S0, 100, 1, 0.04, q, PBs, .2)
 	fmt.Println("IV ", IV)
+
+	thetaC := libs.Theta("C", S0, 100, 1, 0.04, sigma, q, 365)
+	thetaP := libs.Theta("P", S0, 100, 1, 0.04, sigma, q, 365)
+
+	fmt.Println(thetaC, thetaP)
+
+	rhoC := libs.Rho("C", S0, 100, 1, 0.04, sigma, q)
+	rhoP := libs.Rho("P", S0, 100, 1, 0.04, sigma, q)
+
+	fmt.Println(rhoC, rhoP)
+
 
 }
 
