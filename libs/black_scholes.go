@@ -49,6 +49,10 @@ func Bs(tipo string, S, K, T, r, sigma, div float64) float64 {
 }
 
 func Delta(tipo string, S, K, T, r, sigma, div float64) float64 {
+	/*
+	Delta is the first derivative of option price with respect to underlying price S.
+	*/
+
 	// Create a normal distribution
 	dist := distuv.Normal{
 		Mu:    0,
@@ -61,7 +65,7 @@ func Delta(tipo string, S, K, T, r, sigma, div float64) float64 {
 
 	if tipo == "C" {
 		delta = math.Exp(-div*T) * dist.CDF(d1)
-	} else {
+	} else if tipo == "P" {
 		delta = -math.Exp(-div*T) * dist.CDF(-d1)
 	}
 
@@ -73,12 +77,18 @@ func np(x float64) float64{
 }
 
 func Gamma(S, K, T, r, sigma, div float64) float64 {
+	/*
+	Gamma is the second derivative of option price with
+	respect to underlying price S. It is the same for calls and puts.
+	*/
 	d1 := d1(S, K, T, r, sigma, div)
 	return math.Exp(-div*T) * np(d1) / (S*sigma*math.Sqrt(T))
 }
 
 func Theta(tipo string, S, K, T, r, sigma, div float64, NDY int) float64 {
-
+	/*
+	Theta is the first derivative of option price with respect to time to expiration T.
+	*/
 	var theta float64
 
 	dist := distuv.Normal{
@@ -94,7 +104,7 @@ func Theta(tipo string, S, K, T, r, sigma, div float64, NDY int) float64 {
 
 	if tipo == "C" {
 		theta = (1.0/float64(NDY)) * (-temp - r*K*math.Exp(-r*T)*dist.CDF(d2) + div*S*math.Exp(-div*T)*dist.CDF(d1))
-	} else {
+	} else if tipo == "P" {
 		theta = (1.0/float64(NDY)) * (-temp + r*K*math.Exp(-r*T)*dist.CDF(-d2) - div*S*math.Exp(-div*T)*dist.CDF(-d1))
 	}
 	return theta
@@ -116,14 +126,18 @@ func Rho(tipo string, S, K, T, r, sigma, div float64) float64 {
 
 	if tipo == "C" {
 		rho = K * T * math.Exp(-r*T)*dist.CDF(d2) / 100
-	} else {
+	} else if tipo == "P" {
 		rho = -K * T * math.Exp(-r*T)*dist.CDF(-d2) / 100
 	}
 
 	return rho
 }
-func Vega(S, K, T, r, sigma, div float64) float64{
 
+func Vega(S, K, T, r, sigma, div float64) float64{
+	/*
+    Vega is the first derivative of option price with respect to volatility σ.
+	It is the same for calls and puts.
+	*/
 	d1 := d1(S, K, T, r, sigma, div)
 	return S * math.Exp(-div*T) * math.Sqrt(T) * np(d1)
 
@@ -171,48 +185,6 @@ func IV_Bs(tipo string, S, K, T, r, div, price float64) float64 {
 
 	return sigma
 }
-
-func Bin(tipo string, S, K, T, r, sigma, div float64, steps int) float64 {
-
-	dt := T / float64(steps)
-	tasa_forward := math.Exp((r - div) * dt)
-	descuento := math.Exp(-r * dt)
-	u := math.Exp(sigma * math.Pow(dt, 0.5))
-	d := 1 / u
-	q_prob := (tasa_forward - d) / (u - d)
-
-	ST_precios := make([]float64, steps+1)
-	for i := 0; i < steps+1; i++ {
-		ST_precios[steps-i] = math.Pow(u, 2*float64(i)-float64(steps)) * S
-	}
-
-	options_matrix := make([][]float64, steps+1)
-	for i := range options_matrix {
-		options_matrix[i] = make([]float64, steps+1)
-	}
-
-	for i := 0; i < steps+1; i++ {
-		if tipo == "P" {
-			options_matrix[i][steps] = math.Max(0, (K - ST_precios[i]))
-		} else {
-			options_matrix[i][steps] = math.Max(0, -(K - ST_precios[i]))
-		}
-	}
-
-	for j := 1; j < steps+1; j++ {
-		for i := 0; i < steps+1-j; i++ {
-			eur := q_prob*options_matrix[i][steps-j+1] + (1-q_prob)*options_matrix[i+1][steps-j+1]
-			if tipo == "P" {
-				options_matrix[i][steps-j] = descuento * math.Max(eur, K-S*math.Pow(u, float64(-2*i+steps-j)))
-			} else {
-				options_matrix[i][steps-j] = descuento * math.Max(eur, -(K-S*math.Pow(u, float64(-2*i+steps-j))))
-
-			}
-		}
-	}
-	return options_matrix[0][0]
-}
-
 
 type Parameters struct {
 	Tipo, Method           string
