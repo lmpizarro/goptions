@@ -35,9 +35,11 @@ func Bin(p *Parameters, steps int) float64 {
 		for i := 0; i < steps+1-j; i++ {
 			eur := q_prob*options_matrix[i][steps-j+1] + (1-q_prob)*options_matrix[i+1][steps-j+1]
 			if p.Tipo == "P" {
-				options_matrix[i][steps-j] = descuento * math.Max(eur, p.K-p.S*math.Pow(u, float64(-2*i+steps-j)))
+				options_matrix[i][steps-j] =
+					descuento * math.Max(eur, p.K-p.S*math.Pow(u, float64(-2*i+steps-j)))
 			} else {
-				options_matrix[i][steps-j] = descuento * math.Max(eur, -(p.K-p.S*math.Pow(u, float64(-2*i+steps-j))))
+				options_matrix[i][steps-j] =
+					descuento * math.Max(eur, -(p.K-p.S*math.Pow(u, float64(-2*i+steps-j))))
 
 			}
 		}
