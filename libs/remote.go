@@ -12,35 +12,6 @@ import (
 	"github.com/piquette/finance-go/quote"
 )
 
-func cal_IV() {
-	symbol := "SPY"
-
-	q, err := quote.Get(symbol)
-	if err != nil {
-		panic(err)
-	}
-
-	expiration_dates := expiration(symbol)
-	n := len(expiration_dates)
-	r1 := int(math.Round(float64(n)/4.0)) * 1
-	r2 := int(math.Round(float64(n)/4.0)) * 2
-	r3 := int(math.Round(float64(n)/4.0)) * 3
-	if r3 > n {
-		r3--
-	}
-	fmt.Println(n, r1, r2, r3)
-
-	var wg sync.WaitGroup
-	time1 := time.Now().Unix()
-	wg.Add(4)
-	go process(expiration_dates[0:r1], symbol, q.RegularMarketPrice, &wg)
-	go process(expiration_dates[r1:r2], symbol, q.RegularMarketPrice, &wg)
-	go process(expiration_dates[r2:r3], symbol, q.RegularMarketPrice, &wg)
-	go process(expiration_dates[r3:n], symbol, q.RegularMarketPrice, &wg)
-	wg.Wait()
-	time2 := time.Now().Unix()
-	fmt.Println(time2 - time1)
-}
 
 func process(exp_dates [][]string, symbol string, price float64, wg *sync.WaitGroup) {
 	time1 := time.Now().Unix()
@@ -144,4 +115,33 @@ func fetch_options(symbol, expirationF string, S0 float64) CallPut {
 	cp.Mcall = &m_call
 	cp.Mput = &m_put
 	return cp
+}
+
+func Cal_IV(symbol string) {
+
+	q, err := quote.Get(symbol)
+	if err != nil {
+		panic(err)
+	}
+
+	expiration_dates := expiration(symbol)
+	n := len(expiration_dates)
+	r1 := int(math.Round(float64(n)/4.0)) * 1
+	r2 := int(math.Round(float64(n)/4.0)) * 2
+	r3 := int(math.Round(float64(n)/4.0)) * 3
+	if r3 > n {
+		r3--
+	}
+	fmt.Println(n, r1, r2, r3)
+
+	var wg sync.WaitGroup
+	time1 := time.Now().Unix()
+	wg.Add(4)
+	go process(expiration_dates[0:r1], symbol, q.RegularMarketPrice, &wg)
+	go process(expiration_dates[r1:r2], symbol, q.RegularMarketPrice, &wg)
+	go process(expiration_dates[r2:r3], symbol, q.RegularMarketPrice, &wg)
+	go process(expiration_dates[r3:n], symbol, q.RegularMarketPrice, &wg)
+	wg.Wait()
+	time2 := time.Now().Unix()
+	fmt.Println(time2 - time1)
 }
