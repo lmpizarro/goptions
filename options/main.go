@@ -104,12 +104,10 @@ func fetch_options(symbol, expirationF string, S0 float64) CallPut {
 func main() {
 
 	params := libs.Parameters{S: 100.0, K: 100.0,
-		Tipo: "C", T: 1, Sigma: .4, Q: 0.01, R: 0.04}
+		Tipo: "P", T: 1, Sigma: .4, Q: 0.01, R: 0.04}
 
-	params.Tipo = "P"
 	PBs := libs.Bs(&params)
 	deltaPBs := libs.Delta(&params)
-
 	fmt.Println("hi P", PBs, deltaPBs)
 
 	params.Tipo = "C"
@@ -118,7 +116,7 @@ func main() {
 
 	fmt.Println("hi C ", CBs, deltaCBs)
 
-	fmt.Println("diff delta ", deltaCBs-deltaPBs)
+	fmt.Println("diff deltas ", deltaCBs-deltaPBs)
 
 	C := libs.Bin(&params, 150)
 	fmt.Println("hi C Bin", C)
