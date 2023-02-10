@@ -35,7 +35,7 @@ func Test(){
 	IV := IvBs(&params, PBs)
 	fmt.Println("IV ", IV)
 
-	IV = IvBsNewton(&params, 0.1, PBs)
+	_, IV = IvBsNewton(&params, 0.1, PBs, 0.001)
 	fmt.Println("IV Newton ", IV)
 
 	params.Tipo = "C"

@@ -14,6 +14,10 @@ func d2(p *Parameters) float64 {
 	return d1(p) - p.Sigma*math.Sqrt(p.T)
 }
 
+func np(x float64) float64 {
+	return math.Exp(-math.Pow(x, 2)/2) / math.Sqrt((2 * math.Pi))
+}
+
 func Bs(p *Parameters) float64 {
 
 	/*
@@ -26,7 +30,7 @@ func Bs(p *Parameters) float64 {
 		- T : float - Tiempo hasta la expiracion (en años)
 		- r: Tasa 'libre de riesgo' (anualizada)
 		- sigma : float - Volatilidad implicita (anualizada)
-		- div : float - Tasa de dividendos continuos (anualizada)
+		- q : float - Tasa de dividendos continuos (anualizada)
 		Outputs
 		- precio_BS: float - Precio del contrato
 	*/
@@ -73,9 +77,6 @@ func Delta(p *Parameters) float64 {
 	return delta
 }
 
-func np(x float64) float64 {
-	return math.Exp(-math.Pow(x, 2)/2) / math.Sqrt((2 * math.Pi))
-}
 
 func Gamma(p *Parameters) float64 {
 	/*
@@ -151,21 +152,23 @@ func Vega(p *Parameters) float64 {
 
 }
 
-func IvBsNewton(p *Parameters, sigma0, price float64) float64 {
+func IvBsNewton(p *Parameters, sigma0, price, tol float64) (int, float64) {
 	var (
 		price0 float64
 		vega0  float64
 	)
+	i := 0
 	for {
+		i++
 		p.Sigma = sigma0
 		price0 = Bs(p)
 		vega0 = Vega(p)
 		sigma0 = sigma0 - ((price0 - price) / vega0)
-		if (price0 - price) < 0.01 {
+		if math.Abs(price0 - price) < tol {
 			break
 		}
 	}
-	return sigma0
+	return i, sigma0
 }
 
 func IvBs(p *Parameters, price float64) float64 {

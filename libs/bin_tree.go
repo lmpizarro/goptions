@@ -47,3 +47,23 @@ func Bin(p *Parameters, steps int) float64 {
 	return options_matrix[0][0]
 }
 
+func DeltaBin(p *Parameters, steps int) float64{
+	h := 0.0001
+	c1 := Bin(p, steps)
+	p.S = p.S*(1.0 + h)
+	c2 := Bin(p, steps)
+
+	return  100*(c2 - c1)
+}
+
+func GammaBin(p *Parameters, steps int) float64{
+	h := 0.0001
+
+	f0 := DeltaBin(p, steps)
+
+	p.S = p.S*(1.0 + h)
+	f1 := DeltaBin(p, steps)
+
+	return 100 * (-f0 + f1)
+}
+
