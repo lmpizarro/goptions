@@ -36,3 +36,9 @@ https://www.simtrade.fr/blog_simtrade/option-greeks-vega/
 
 ## code
 [in go](https://medium.com/swlh/calculating-option-premiums-using-the-black-scholes-model-in-python-e9ed227afbee)
+
+
+/*
+    https://blog.quantinsti.com/implied-volatility/
+	https://github.com/yassinemaaroufi/MibianLib
+*/
