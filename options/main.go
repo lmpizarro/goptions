@@ -5,12 +5,13 @@ import (
 	"lmpizarro/options/libs"
 	"math"
 
+	"sync"
+	"time"
+
 	finance "github.com/piquette/finance-go"
 	"github.com/piquette/finance-go/datetime"
 	"github.com/piquette/finance-go/options"
 	"github.com/piquette/finance-go/quote"
-	"sync"
-	"time"
 )
 
 /*
@@ -103,19 +104,17 @@ func fetch_options(symbol, expirationF string, S0 float64) CallPut {
 func main() {
 
 	params := libs.Parameters{S: 100.0, K: 100.0,
-		Tipo: "C", T: 1, Sigma: .4, Q: 0.01}
+		Tipo: "C", T: 1, Sigma: .4, Q: 0.01, R: 0.04}
 
-	S0 := 100.0
-	q := 0.01
-	sigma := 0.4
-
-	PBs := libs.Bs("P", S0, 100, 1, 0.04, sigma, q)
-	deltaPBs := libs.Delta("P", S0, 100, 1, 0.04, sigma, q)
+	params.Tipo = "P"
+	PBs := libs.Bs(&params)
+	deltaPBs := libs.Delta(&params)
 
 	fmt.Println("hi P", PBs, deltaPBs)
 
-	CBs := libs.Bs("C", S0, 100, 1, 0.04, sigma, q)
-	deltaCBs := libs.Delta("C", S0, 100, 1, 0.04, sigma, q)
+	params.Tipo = "C"
+	CBs := libs.Bs(&params)
+	deltaCBs := libs.Delta(&params)
 
 	fmt.Println("hi C ", CBs, deltaCBs)
 
@@ -127,31 +126,43 @@ func main() {
 	P := libs.Bin(&params, 150)
 	fmt.Println("hi P Bin", P)
 
-	gamma := libs.Gamma(S0, 100, 1, 0.04, sigma, q)
+	gamma := libs.Gamma(&params)
 	fmt.Println("gamma ", gamma)
-	vega := libs.Vega(S0, 100, 1, 0.04, sigma, q)
+	vega := libs.Vega(&params)
 	fmt.Println("vega ", vega)
 
-	IV := libs.IV_Bs("P", S0, 100, 1, 0.04, q, PBs)
+	params.Tipo = "P"
+	IV := libs.IvBs(&params, PBs)
 	fmt.Println("IV ", IV)
 
-	IV = libs.IvBsNewton("P", S0, 100, 1, 0.04, q, PBs, .2)
-	fmt.Println("IV ", IV)
+	IV = libs.IvBsNewton(&params, 0.1, PBs)
+	fmt.Println("IV Newton ", IV)
 
-	thetaC := libs.Theta("C", S0, 100, 1, 0.04, sigma, q, true)
-	thetaP := libs.Theta("P", S0, 100, 1, 0.04, sigma, q, true)
+	params.Tipo = "C"
+	thetaC := libs.Theta(&params, true)
+	params.Tipo = "P"
+	thetaP := libs.Theta(&params, true)
 
 	fmt.Println(thetaC, thetaP)
 
-	rhoC := libs.Rho("C", S0, 100, 1, 0.04, sigma, q)
-	rhoP := libs.Rho("P", S0, 100, 1, 0.04, sigma, q)
+	params.Tipo = "C"
+	rhoC := libs.Rho(&params)
+	params.Tipo = "P"
+	rhoP := libs.Rho(&params)
 
 	fmt.Println(rhoC, rhoP)
 
-	gamma = libs.Gamma(49, 50, 0.3846, 0.05, .2, 0.0)
-	thetaC = libs.Theta("C", 49, 50, 0.3846, 0.05, .2, 0, true)
-	deltaCBs = libs.Delta("C", 49, 50, 0.3846, 0.05, .2, 0)
-	rhoC = libs.Rho("C", 49, 50, 0.3846, 0.05, .2, 0)
+	params.K = 50
+	params.S = 49
+	params.T = 0.3846
+	params.R = 0.05
+	params.Sigma = .2
+	params.Q = 0.0
+	params.Tipo = "C"
+	gamma = libs.Gamma(&params)
+	thetaC = libs.Theta(&params, true)
+	deltaCBs = libs.Delta(&params)
+	rhoC = libs.Rho(&params)
 
 	fmt.Println("\t Options, Futures, Derivatives 9th ed, J.C. Hull")
 	fmt.Println("gamma Hull pag 415", gamma)
@@ -193,12 +204,16 @@ func cal_IV() {
 
 func process(exp_dates [][]string, symbol string, price float64, wg *sync.WaitGroup) {
 	time1 := time.Now().Unix()
+	params := libs.Parameters{R: 0.04, Q: 0.01, Tipo: "C"}
 	var count int
 	for _, eF := range exp_dates {
 		s1 := fetch_options(symbol, eF[0], price)
 		for index, arr := range *s1.Mcall {
 			for _, e := range arr {
-				libs.IV_Bs("C", price, e[0], float64(index)/365, 0.04, 0.01, e[1])
+				params.S = price
+				params.K = e[0]
+				params.T = float64(index) / 365
+				libs.IvBs(&params, e[1])
 				//fmt.Println(eF[0], round_down(iv, 4), e[0], e[1], round_down(e[2], 4))
 				count++
 			}
