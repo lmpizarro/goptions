@@ -5,18 +5,14 @@ WIP LICENSE GNU
 ## Calculators
 
 [option education](https://www.optionseducation.org/toolsoptionquotes/optionscalculator)
+https://golangdocs.com/golang-finance-go-package-stock-quote-options-chart
 
-https://go.dev/doc/tutorial/workspaces
-
-https://yourbasic.org/golang/for-loop/
-
-https://golangbyexample.com/two-dimensional-array-slice-golang/
 
 https://github.com/spzala19/Multiprocessing-with-golang
 
 https://www.simtrade.fr/blog_simtrade/option-greeks-vega/
 
-
+https://golangdocs.com/golang-finance-go-package-stock-quote-options-chart
 
 
 ## Implied Volatility

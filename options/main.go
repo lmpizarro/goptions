@@ -54,13 +54,11 @@ func main() {
 
 	fmt.Println(rhoC, rhoP)
 
-	params.K = 50
-	params.S = 49
-	params.T = 0.3846
-	params.R = 0.05
-	params.Sigma = .2
-	params.Q = 0.0
+	params.K = 50; params.S = 49
+	params.T = 0.3846; params.R = 0.05
+	params.Sigma = .2; params.Q = 0.0;
 	params.Tipo = "C"
+
 	gamma = libs.Gamma(&params)
 	thetaC = libs.Theta(&params, true)
 	deltaCBs = libs.Delta(&params)
