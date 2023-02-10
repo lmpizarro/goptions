@@ -22,5 +22,14 @@ func main() {
 
 	fmt.Println(params)
 
+	params.S = 100.0
+	params.K = 150.0
+	params.Tipo = "C"
+
+	for _, e := range []float64{0.9, 0.8, 0.7, .6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05} {
+		fmt.Println(libs.Delta(&params))
+		params.T = e
+	}
+
 }
 

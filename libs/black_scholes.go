@@ -18,6 +18,9 @@ func np(x float64) float64 {
 	return math.Exp(-math.Pow(x, 2)/2) / math.Sqrt((2 * math.Pi))
 }
 
+//	Option Price Calculator by Black-Scholes-Merton Model
+//		In: *Parameters {S, K, R, T, Sigma, Q}
+//		Out: price float64
 func Bs(p *Parameters) float64 {
 
 	/*
@@ -53,11 +56,10 @@ func Bs(p *Parameters) float64 {
 	return price
 }
 
+//	Delta is the first derivative of option price with respect to underlying price S.
+//		In: *Parameters {S, K, R, T, Sigma, Q}
+//		Out: delta float64
 func Delta(p *Parameters) float64 {
-	/*
-		Delta is the first derivative of option price with respect to underlying price S.
-	*/
-
 	// Create a normal distribution
 	dist := distuv.Normal{
 		Mu:    0,
@@ -77,20 +79,22 @@ func Delta(p *Parameters) float64 {
 	return delta
 }
 
-
+//	Gamma is the second derivative of option price with
+//	respect to underlying price S. It is the same for calls and puts.
+//		In: *Parameters {S, K, R, T, Sigma, Q}
+//		Out: gamma float64
 func Gamma(p *Parameters) float64 {
-	/*
-		Gamma is the second derivative of option price with
-		respect to underlying price S. It is the same for calls and puts.
-	*/
+
 	d1 := d1(p)
 	return math.Exp(-p.Q*p.T) * np(d1) / (p.S * p.Sigma * math.Sqrt(p.T))
 }
 
+//	Theta is the first derivative of option price with respect to time to expiration T.
+//		In: *Parameters {S, K, R, T, Sigma, Q}
+//			calendar bool
+//		Out: theta float64
 func Theta(p *Parameters, calendar bool) float64 {
-	/*
-		Theta is the first derivative of option price with respect to time to expiration T.
-	*/
+
 	var theta float64
 	var NDY float64
 
@@ -119,11 +123,10 @@ func Theta(p *Parameters, calendar bool) float64 {
 	return theta / NDY
 }
 
+//	Rho is the first derivative of option price with respect to interest rate r
+//		In: *Parameters {S, K, R, T, Sigma, Q}
+//		Out: rho float64
 func Rho(p *Parameters) float64 {
-	/*
-		Rho is the first derivative of option price with respect to interest rate r
-	*/
-
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
@@ -142,16 +145,18 @@ func Rho(p *Parameters) float64 {
 	return rho
 }
 
+
+//    Vega is the first derivative of option price with respect to volatility σ.
+//	It is the same for calls and puts.
+//		In: *Parameters {S, K, R, T, Sigma, Q}
+//		Out: vega float64
 func Vega(p *Parameters) float64 {
-	/*
-		    Vega is the first derivative of option price with respect to volatility σ.
-			It is the same for calls and puts.
-	*/
 	d1 := d1(p)
 	return p.S * math.Exp(-p.Q*p.T) * math.Sqrt(p.T) * np(d1)
 
 }
 
+//	Solves Black-Scholes-Merton Implied Volatility by Newton Rapshon method
 func IvBsNewton(p *Parameters, sigma0, price, tol float64) (int, float64) {
 	var (
 		price0 float64
@@ -171,6 +176,7 @@ func IvBsNewton(p *Parameters, sigma0, price, tol float64) (int, float64) {
 	return i, sigma0
 }
 
+//	Solves Black-Scholes-Merton Implied Volatility
 func IvBs(p *Parameters, price float64) float64 {
 	var diff float64
 
@@ -199,6 +205,15 @@ func IvBs(p *Parameters, price float64) float64 {
 	return sigma
 }
 
+
+//	Parameters
+//		S: underlying Price
+//		K: Strike
+//		T: time to maturity
+//		R: risk free rate
+//		Sigma: volatility
+//		Q: dividend yield
+//		Tipo: "C" for call "P" for put
 type Parameters struct {
 	Tipo                 string
 	S, K, T, R, Sigma, Q float64
