@@ -12,36 +12,35 @@ import (
 	"github.com/piquette/finance-go/quote"
 )
 
-
 func process(exp_dates [][]string, symbol string,
-	         limits *Limits, wg *sync.WaitGroup) {
+	limits *Limits, wg *sync.WaitGroup) {
 
 	time1 := time.Now().Unix()
 	params := Parameters{R: 0.04, Q: 0.01, Tipo: "C"}
 	var count int
-	for _, eF := range exp_dates {
-		if limits.Exp_date > eF[0]{
-		s1 := fetch_options(symbol, eF[0], limits)
-			for index, arr := range *s1.Mcall {
-				for _, e := range arr {
+	for _, exp_date := range exp_dates {
+		if limits.Exp_date > exp_date[0] {
+			s1 := fetch_options(symbol, exp_date[0], limits)
+			fmt.Println("exp date", exp_date[0])
+			for index, call := range *s1.Mcall {
+				for _, e := range call {
 					params.S = limits.S0
 					params.K = e[0]
 					params.T = float64(index) / 365
-					IvBs(&params, e[1])
-					//fmt.Println(eF[0], round_down(iv, 4), e[0], e[1], round_down(e[2], 4))
+					iv :=  IvBs(&params, e[1])
+					fmt.Println(round_down(iv, 4), e[0], e[1], round_down(e[2], 4))
 					count++
 				}
 			}
-	   	}
+		}
 	}
 	time2 := time.Now().Unix()
 	fmt.Println(count, time2-time1)
 	wg.Done()
 }
 
-//	In: symbol string
-//  Out: exp_dates [[2023-05-24]...]
-//
+//		In: symbol string
+//	 Out: exp_dates [[2023-05-24]...]
 func expiration_dates(symbol string) [][]string {
 	// fetch options.
 	p := &options.Params{
@@ -75,9 +74,9 @@ func round_down(num float64, n float64) float64 {
 }
 
 type Limits struct {
-	S0 float64
-	K_inf float64
-	K_sup float64
+	S0       float64
+	K_inf    float64
+	K_sup    float64
 	Exp_date string
 }
 
@@ -125,8 +124,7 @@ func fetch_options(symbol, expirationF string, limits *Limits) CallPut {
 	return call_put
 }
 
-func Cal_IV(symbol string) {
-
+func Parallel_Calc_IV(symbol string) {
 
 	q, err := quote.Get(symbol)
 	if err != nil {
