@@ -20,17 +20,19 @@ func process(exp_dates [][]string, symbol string,
 	params := Parameters{R: 0.04, Q: 0.01, Tipo: "C"}
 	var count int
 	for _, eF := range exp_dates {
+		if limits.Exp_date > eF[0]{
 		s1 := fetch_options(symbol, eF[0], limits)
-		for index, arr := range *s1.Mcall {
-			for _, e := range arr {
-				params.S = limits.S0
-				params.K = e[0]
-				params.T = float64(index) / 365
-				IvBs(&params, e[1])
-				//fmt.Println(eF[0], round_down(iv, 4), e[0], e[1], round_down(e[2], 4))
-				count++
+			for index, arr := range *s1.Mcall {
+				for _, e := range arr {
+					params.S = limits.S0
+					params.K = e[0]
+					params.T = float64(index) / 365
+					IvBs(&params, e[1])
+					//fmt.Println(eF[0], round_down(iv, 4), e[0], e[1], round_down(e[2], 4))
+					count++
+				}
 			}
-		}
+	   	}
 	}
 	time2 := time.Now().Unix()
 	fmt.Println(count, time2-time1)
