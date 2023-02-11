@@ -39,8 +39,8 @@ func process(exp_dates [][]string, symbol string,
 	wg.Done()
 }
 
-//		In: symbol string
-//	 Out: exp_dates [[2023-05-24]...]
+//	In: symbol string
+//	Out: exp_dates [[2023-05-24]...]
 func expiration_dates(symbol string) [][]string {
 	// fetch options.
 	p := &options.Params{
@@ -75,46 +75,54 @@ func round_down(num float64, n float64) float64 {
 
 type Limits struct {
 	S0       float64
-	K_inf    float64
-	K_sup    float64
+	K_min    float64
+	K_max    float64
 	Exp_date string
 }
 
-func fetch_options(symbol, expirationF string, limits *Limits) CallPut {
-	m_call := make(map[int][][]float64)
-	m_put := make(map[int][][]float64)
-	var call_put CallPut
-
-	// fetch options.
-	params := &options.Params{
-		UnderlyingSymbol: symbol,
-	}
-	dt, err := time.Parse("2006-01-02", expirationF)
-	fmt.Println(expirationF)
+func parse_string_date(date string) (time.Time, int64) {
+	dt, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		panic("could not parse expiration- correct format is yyyy-mm-dd")
 	}
 	ttm_days := (dt.Unix() - time.Now().Unix()) / (3600 * 24)
+	return dt, ttm_days
+}
 
-	params.Expiration = datetime.New(&dt)
-
-	iter := options.GetStraddleP(params)
-
-	straddles := []*finance.Straddle{}
-	for iter.Next() {
-		straddles = append(straddles, iter.Straddle())
+func get_straddles(exp_date time.Time, symbol string) []*finance.Straddle{
+	params := &options.Params{
+		UnderlyingSymbol: symbol,
 	}
-	if iter.Err() != nil {
+	params.Expiration = datetime.New(&exp_date)
+	iter_straddle := options.GetStraddleP(params)
+	straddles := []*finance.Straddle{}
+
+	for iter_straddle.Next() {
+		straddles = append(straddles, iter_straddle.Straddle())
+	}
+	if iter_straddle.Err() != nil {
 		panic("error iter")
 	}
+	return straddles
+}
+
+func fetch_options(symbol, exp_date_str string, limits *Limits) CallPut {
+	m_call := make(map[int][][]float64)
+	m_put := make(map[int][][]float64)
+	var call_put CallPut
+
+	exp_date_time, ttm_days := parse_string_date(exp_date_str)
+	straddles := get_straddles(exp_date_time, symbol)
+
 	for _, e := range straddles {
 		call := e.Call
 		put := e.Put
 		if call != nil && put != nil && ttm_days > 0 {
-			if call.Strike < limits.K_sup && call.Strike > limits.K_inf {
-				arr := []float64{call.Strike, call.LastPrice, call.ImpliedVolatility}
+			strike := call.Strike
+			if strike < limits.K_max && strike > limits.K_min {
+				arr := []float64{strike, call.LastPrice, call.ImpliedVolatility}
 				m_call[int(ttm_days)] = append(m_call[int(ttm_days)], arr)
-				arr = []float64{call.Strike, put.LastPrice, put.ImpliedVolatility}
+				arr = []float64{strike, put.LastPrice, put.ImpliedVolatility}
 				m_put[int(ttm_days)] = append(m_put[int(ttm_days)], arr)
 			}
 		}
@@ -141,7 +149,7 @@ func Parallel_Calc_IV(symbol string) {
 	}
 	fmt.Println(n, r1, r2, r3)
 	S0 := q.RegularMarketPrice
-	limits := Limits{S0: S0, K_inf: S0 * .2, K_sup: S0 * 1.5, Exp_date: "2023-04-30"}
+	limits := Limits{S0: S0, K_min: S0 * .2, K_max: S0 * 1.5, Exp_date: "2023-04-30"}
 
 	var wg sync.WaitGroup
 	time1 := time.Now().Unix()
