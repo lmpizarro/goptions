@@ -7,6 +7,8 @@ import (
 
 func main() {
 
+	libs.Cal_IV("SPY")
+	
 	fmt.Println("Tests")
 	params := libs.Parameters{S: 100.0, K: 100.0,
 		Tipo: "P", T: 1, Sigma: .4, Q: 0.01, R: 0.04}
@@ -26,10 +28,13 @@ func main() {
 	params.K = 150.0
 	params.Tipo = "C"
 
-	for _, e := range []float64{0.9, 0.8, 0.7, .6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05} {
-		fmt.Println(libs.Delta(&params))
-		params.T = e
+	for _, S := range []float64{105, 110, 115, 120, 125, 130, 135, 140, 145, 150}{
+		fmt.Println("---------------------------")
+		for _, T := range []float64{0.9, 0.8, 0.7, .6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05} {
+			fmt.Println(S, T, libs.Delta(&params))
+			params.T = T
+		}
+		params.S = S
 	}
-
 }
 
