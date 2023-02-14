@@ -85,37 +85,36 @@ func get_header(){
 	fmt.Printf(formatH, "tipo", "S0",  "K", "Price",  "Matur", "IV", "Mnn", "delta", "gamma")
 }
 
-func Yf_Options(params *Yf_params) {
-	exp_dates := expiration_dates(params.Symbol)
-	exp_dates = limit_exp_dates(exp_dates, params.Max_exp_date)
+func Yf_Options(yf_params *Yf_params) {
+	exp_dates := expiration_dates(yf_params.Symbol)
+	exp_dates = limit_exp_dates(exp_dates, yf_params.Max_exp_date)
 
 	get_header()
 	for _, exp_date := range exp_dates {
-		params.Exp_date = exp_date[0]
-		strdls := Fetch_Options(params)
+		yf_params.Exp_date = exp_date[0]
+		strdls := Fetch_Options(yf_params)
 		for _, str := range strdls {
 			ttm_days := ttm_in_days(int64(str.Put.Expiration))
-			mnnC := (params.S0 - str.Call.Strike) / str.Call.Strike
-			mnnP := (str.Put.Strike - params.S0) / str.Put.Strike
-			mnnPBool := params.S0 < str.Put.Strike
-			mnnCBool := params.S0 > str.Put.Strike
-			price_limit := 0.0024 * params.S0
+			mnnC := (yf_params.S0 - str.Call.Strike) / str.Call.Strike
+			mnnP := (str.Put.Strike - yf_params.S0) / str.Put.Strike
+			mnnPBool := yf_params.S0 < str.Put.Strike
+			mnnCBool := yf_params.S0 > str.Put.Strike
+			price_limit := 0.0024 * yf_params.S0
 			min_mnn := -0.05
 			max_mnn := -0.01
 			min_ttm := 10
 			if !mnnCBool {
-				if mnnC < max_mnn && mnnC > min_mnn && str.Call.LastPrice < price_limit  && ttm_days > int64(min_ttm){
-					par_calc := Parameters{Tipo: "C", S: params.S0, K: str.Call.Strike,
+				if mnnC < max_mnn && mnnC > min_mnn && str.Call.LastPrice < price_limit && ttm_days > int64(min_ttm){
+					par_calc := Parameters{Tipo: "C", S: yf_params.S0, K: str.Call.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: str.Call.ImpliedVolatility, Q: 0.02}
 					get_output(&par_calc, str.Call.LastPrice, mnnC)
 				}
 			}
 			if !mnnPBool{
 				if mnnP < max_mnn && mnnP > 1.5 * min_mnn && str.Put.LastPrice < price_limit && ttm_days > int64(min_ttm){
-
-					par_calc := Parameters{Tipo: "P", S: params.S0, K: str.Put.Strike,
+					par_calc := Parameters{Tipo: "P", S: yf_params.S0, K: str.Put.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: str.Put.ImpliedVolatility, Q: 0.02}
-					get_output(&par_calc, str.Put.LastPrice,  mnnP)
+					get_output(&par_calc, str.Put.LastPrice, mnnP)
 				}
 			}
 		}
