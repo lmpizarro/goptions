@@ -70,13 +70,26 @@ func Fetch_Options(params *Yf_params) []*finance.Straddle{
 	return filtered_straddles
 }
 
+func get_output(params *Parameters, last_price, mnnC float64){
+
+	delta := Delta(params)
+	gamma := Gamma(params)
+	formatD := "%6s %6.2f %6.2f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f\n"
+	fmt.Printf(formatD, params.Tipo, params.S, params.K, last_price,
+		params.T, round_down(params.Sigma, 4),
+		round_down(mnnC, 4), round_down(delta, 4), round_down(gamma, 4))
+}
+
+func get_header(){
+	formatH := "%6s %6s %6s %10s %10s %10s %10s %10s %10s\n"
+	fmt.Printf(formatH, "tipo", "S0",  "K", "Price",  "Matur", "IV", "Mnn", "delta", "gamma")
+}
+
 func Yf_Options(params *Yf_params) {
 	exp_dates := expiration_dates(params.Symbol)
 	exp_dates = limit_exp_dates(exp_dates, params.Max_exp_date)
 
-	formatD := "%6s %6.2f %6.2f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f\n"
-	formatH := "%6s %6s %6s %10s %10s %10s %10s %10s %10s\n"
-	fmt.Printf(formatH, "tipo", "S0",  "K", "Price",  "Matur", "IV", "Mnn", "delta", "gamma")
+	get_header()
 	for _, exp_date := range exp_dates {
 		params.Exp_date = exp_date[0]
 		strdls := Fetch_Options(params)
@@ -94,12 +107,7 @@ func Yf_Options(params *Yf_params) {
 				if mnnC < max_mnn && mnnC > min_mnn && str.Call.LastPrice < price_limit  && ttm_days > int64(min_ttm){
 					par_calc := Parameters{Tipo: "C", S: params.S0, K: str.Call.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: str.Call.ImpliedVolatility, Q: 0.02}
-					delta := Delta(&par_calc)
-					gamma := Gamma(&par_calc)
-
-					fmt.Printf(formatD, "C ", params.S0, str.Call.Strike, str.Call.LastPrice,
-						float64(ttm_days/7.0), round_down(str.Call.ImpliedVolatility, 4),
-						round_down(mnnC, 4), round_down(delta, 4), round_down(gamma, 4))
+					get_output(&par_calc, str.Call.LastPrice, mnnC)
 				}
 			}
 			if !mnnPBool{
@@ -107,23 +115,11 @@ func Yf_Options(params *Yf_params) {
 
 					par_calc := Parameters{Tipo: "P", S: params.S0, K: str.Put.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: str.Put.ImpliedVolatility, Q: 0.02}
-					delta := Delta(&par_calc)
-					gamma := Gamma(&par_calc)
-					fmt.Printf(formatD, "P ", params.S0, str.Put.Strike, str.Put.LastPrice,
-						float64(ttm_days)/7.0, round_down(str.Put.ImpliedVolatility, 4),
-						round_down(mnnP, 4), round_down(delta, 4), round_down(gamma, 4))
-
+					get_output(&par_calc, str.Put.LastPrice,  mnnP)
 				}
-
-
-
 			}
 		}
 	}
-	fmt.Println("", params)
-
-
-
 }
 
 func Test_YF(){
