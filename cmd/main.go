@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"lmpizarro/options/libs"
+
 )
 
 func main() {
 
-	libs.Parallel_Calc_IV("SPY")
+	// libs.Parallel_Calc_IV("SPY")
+	libs.Test_YF()
 
 	fmt.Println("Tests")
 	params := libs.Parameters{S: 100.0, K: 100.0,

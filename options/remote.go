@@ -81,12 +81,14 @@ type Limits struct {
 }
 
 func parse_string_date(date string) (time.Time, int64) {
+	var in_seconds int64
 	dt, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		panic("could not parse expiration- correct format is yyyy-mm-dd")
 	}
-	ttm_days := (dt.Unix() - time.Now().Unix()) / (3600 * 24)
-	return dt, ttm_days
+
+	in_seconds = dt.Unix()
+	return dt, in_seconds
 }
 
 func get_straddles(exp_date time.Time, symbol string) []*finance.Straddle{
@@ -106,17 +108,21 @@ func get_straddles(exp_date time.Time, symbol string) []*finance.Straddle{
 	return straddles
 }
 
+func ttm_in_days(in_seconds int64) int64{
+	 return (in_seconds - time.Now().Unix()) / (3600 * 24)
+}
+
 func fetch_options(symbol, exp_date_str string, limits *Limits) CallPut {
 	m_call := make(map[int][][]float64)
 	m_put := make(map[int][][]float64)
 	var call_put CallPut
 
-	exp_date_time, ttm_days := parse_string_date(exp_date_str)
+	exp_date_time, in_seconds := parse_string_date(exp_date_str)
 	straddles := get_straddles(exp_date_time, symbol)
-
-	for _, e := range straddles {
-		call := e.Call
-		put := e.Put
+	ttm_days := ttm_in_days(in_seconds)
+ 	for _, straddle := range straddles {
+		call := straddle.Call
+		put := straddle.Put
 		if call != nil && put != nil && ttm_days > 0 {
 			strike := call.Strike
 			if strike < limits.K_max && strike > limits.K_min {
