@@ -19,10 +19,15 @@ type Yf_params struct {
 	Min_maturity_in_days int64
 	Max_price float64
 	Put_moneyness_factor float64
+	Type string
 }
 
 func (p *Yf_params) Set_Put_moneyness_factor(ftr float64){
 	p.Put_moneyness_factor = ftr
+}
+
+func (p *Yf_params) Set_Type(tpe string){
+	p.Type = tpe
 }
 
 func (p *Yf_params) Set_Min_moneyness(mnn float64){
@@ -143,6 +148,19 @@ func money_ness(yf_params *Yf_params, str *finance.Straddle) (float64, bool,
 	return mnnC, mnnCBool, mnnP, mnnPBool
 }
 
+func logic_filter(yf_params *Yf_params, mnnC, last_price float64, ttm_days int64) bool {
+	var factor float64
+	if yf_params.Type == "C" {
+		factor = 1.0
+	} else {
+		factor = yf_params.Put_moneyness_factor
+	}
+	return mnnC < yf_params.Max_moneyness &&
+				    mnnC > factor * yf_params.Min_moneyness &&
+					last_price < yf_params.Max_price &&
+					ttm_days > yf_params.Min_maturity_in_days
+}
+
 func Yf_Options(yf_params *Yf_params) {
 	exp_dates := expiration_dates(yf_params.Symbol)
 	exp_dates = limit_exp_dates(exp_dates, yf_params.Max_exp_date)
@@ -155,21 +173,16 @@ func Yf_Options(yf_params *Yf_params) {
 			mnnC, mnnCBool, mnnP, mnnPBool := money_ness(yf_params, straddle)
 			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
 			if !mnnCBool {
-				if mnnC < yf_params.Max_moneyness &&
-				    mnnC > yf_params.Min_moneyness &&
-					straddle.Call.LastPrice < yf_params.Max_price &&
-					ttm_days > yf_params.Min_maturity_in_days {
+				if logic_filter(yf_params, mnnC, straddle.Call.LastPrice, ttm_days) {
 					par_calc := OptionsParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility,
 						Q: 0.02}
 					fmt.Println(get_output(&par_calc, straddle, mnnC))
 				}
 			}
+			(yf_params).Set_Type("P")
 			if !mnnPBool {
-				if mnnP < yf_params.Max_moneyness &&
-				    mnnP > yf_params.Put_moneyness_factor*yf_params.Min_moneyness &&
-					straddle.Put.LastPrice < yf_params.Max_price &&
-					ttm_days > yf_params.Min_maturity_in_days{
+				if logic_filter(yf_params, mnnP, straddle.Put.LastPrice, ttm_days) {
 					par_calc := OptionsParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility,
 						Q: 0.02}
@@ -193,6 +206,7 @@ func Test_YF() {
 	(&yf_params).Set_Min_maturity(10)
 	(&yf_params).Set_Max_price(0.0024 * yf_params.S0)
 	(&yf_params).Set_Put_moneyness_factor(1.5)
+	(&yf_params).Set_Type("C")
 
 	Yf_Options(&yf_params)
 	fmt.Println(yf_params)
