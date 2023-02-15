@@ -70,21 +70,26 @@ func Fetch_Options(params *Yf_params) []*finance.Straddle {
 	return filtered_straddles
 }
 
-func get_output(params *OptionsParameters, str *finance.Straddle, money_ness float64) string {
+func get_output(params *OptionsParameters, str *finance.Straddle, money_ness float64) (string, [9]float64) {
 
 	delta := Delta(params)
 	gamma := Gamma(params)
 	formatD := "%6s %6.2f %6.2f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f"
 	formatD  = "H%2s S %6.2f K %6.2f P %6.4f T %6.4f V %6.4f M %6.4f D %6.4f G %6.4f"
+	var line [9] float64
 	var last_price float64
 	if params.Tipo == "C" {
 		last_price = str.Call.LastPrice
+		line[0] = 1
 	} else {
 		last_price = str.Put.LastPrice
+		line[0] = -1
 	}
+	line[1] = params.S; line[2] = params.K; line[3] = last_price; line[4] = 365 * params.T
+	line[5] = params.Sigma; line[6] = money_ness; line[7] = delta; line[8] = gamma
 	return fmt.Sprintf(formatD, params.Tipo, params.S, params.K, last_price,
 		365*params.T, round_down(params.Sigma, 4),
-		round_down(money_ness, 4), round_down(delta, 4), round_down(gamma, 4))
+		round_down(money_ness, 4), round_down(delta, 4), round_down(gamma, 4)), line
 }
 
 func get_header() {
