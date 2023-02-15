@@ -38,11 +38,11 @@ func (p *Yf_params) Set_Max_price(mp float64){
 }
 
 
-func Set_Max_Exp_date(params *Yf_params, date string) {
+func (params *Yf_params) Set_Max_Exp_date(date string) {
 	params.Max_exp_date = date
 }
 
-func Set_S0_Market_Price(params *Yf_params) {
+func (params *Yf_params) Set_S0_Market_Price() {
 	q, err := quote.Get(params.Symbol)
 	if err != nil {
 		panic(err)
@@ -50,19 +50,19 @@ func Set_S0_Market_Price(params *Yf_params) {
 	params.S0 = q.RegularMarketPrice
 }
 
-func Set_S0(params *Yf_params, s0 float64) {
+func (params *Yf_params) Set_S0( s0 float64) {
 	params.S0 = s0
 }
 
-func Set_K_min(params *Yf_params, pct float64) {
+func (params *Yf_params) Set_K_min( pct float64) {
 	params.K_min = params.S0 * pct / 100
 }
 
-func Set_K_max(params *Yf_params, pct float64) {
+func (params *Yf_params) Set_K_max(pct float64) {
 	params.K_max = params.S0 * pct / 100
 }
 
-func Set_Symbol(params *Yf_params, symbol string) {
+func (params *Yf_params) Set_Symbol(symbol string) {
 	params.Symbol = symbol
 }
 
@@ -181,11 +181,11 @@ func Yf_Options(yf_params *Yf_params) {
 func Test_YF() {
 	var yf_params Yf_params
 
-	Set_Symbol(&yf_params, "AAPL")
-	Set_S0_Market_Price(&yf_params)
-	Set_K_max(&yf_params, 180)
-	Set_K_min(&yf_params, 20)
-	Set_Max_Exp_date(&yf_params, "2023-04-30")
+	(&yf_params).Set_Symbol("AAPL")
+	(&yf_params).Set_S0_Market_Price()
+	(&yf_params).Set_K_max(180)
+	(&yf_params).Set_K_min(20)
+	(&yf_params).Set_Max_Exp_date("2023-04-30")
 	(&yf_params).Set_Min_moneyness(-0.1)
 	(&yf_params).Set_Max_moneyness(-0.01)
 	(&yf_params).Set_Min_maturity(10)
