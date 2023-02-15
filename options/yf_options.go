@@ -70,11 +70,12 @@ func Fetch_Options(params *Yf_params) []*finance.Straddle {
 	return filtered_straddles
 }
 
-func get_output(params *OptionsParameters, str *finance.Straddle, mnnC float64) string {
+func get_output(params *OptionsParameters, str *finance.Straddle, money_ness float64) string {
 
 	delta := Delta(params)
 	gamma := Gamma(params)
 	formatD := "%6s %6.2f %6.2f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f"
+	formatD  = "H%2s S %6.2f K %6.2f P %6.4f T %6.4f V %6.4f M %6.4f D %6.4f G %6.4f"
 	var last_price float64
 	if params.Tipo == "C" {
 		last_price = str.Call.LastPrice
@@ -83,7 +84,7 @@ func get_output(params *OptionsParameters, str *finance.Straddle, mnnC float64) 
 	}
 	return fmt.Sprintf(formatD, params.Tipo, params.S, params.K, last_price,
 		365*params.T, round_down(params.Sigma, 4),
-		round_down(mnnC, 4), round_down(delta, 4), round_down(gamma, 4))
+		round_down(money_ness, 4), round_down(delta, 4), round_down(gamma, 4))
 }
 
 func get_header() {
@@ -117,16 +118,22 @@ func Yf_Options(yf_params *Yf_params) {
 			min_ttm := 10
 			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
 			if !mnnCBool {
-				if mnnC < max_mnn && mnnC > min_mnn && straddle.Call.LastPrice < price_limit && ttm_days > int64(min_ttm) {
+				if mnnC < max_mnn && mnnC > min_mnn &&
+					straddle.Call.LastPrice < price_limit &&
+					ttm_days > int64(min_ttm) {
 					par_calc := OptionsParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
-						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility, Q: 0.02}
+						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility,
+						Q: 0.02}
 					fmt.Println(get_output(&par_calc, straddle, mnnC))
 				}
 			}
 			if !mnnPBool {
-				if mnnP < max_mnn && mnnP > 1.5*min_mnn && straddle.Put.LastPrice < price_limit && ttm_days > int64(min_ttm) {
+				if mnnP < max_mnn && mnnP > 1.5*min_mnn &&
+					straddle.Put.LastPrice < price_limit &&
+					ttm_days > int64(min_ttm) {
 					par_calc := OptionsParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
-						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility, Q: 0.02}
+						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility,
+						Q: 0.02}
 					fmt.Println(get_output(&par_calc, straddle, mnnP))
 				}
 			}
