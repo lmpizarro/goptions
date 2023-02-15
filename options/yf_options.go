@@ -70,19 +70,35 @@ func Fetch_Options(params *Yf_params) []*finance.Straddle{
 	return filtered_straddles
 }
 
-func get_output(params *Parameters, last_price, mnnC float64){
+func get_output(params *Parameters, str *finance.Straddle , mnnC float64) string{
 
 	delta := Delta(params)
 	gamma := Gamma(params)
-	formatD := "%6s %6.2f %6.2f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f\n"
-	fmt.Printf(formatD, params.Tipo, params.S, params.K, last_price,
-		params.T, round_down(params.Sigma, 4),
+	formatD := "%6s %6.2f %6.2f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f"
+	var last_price float64
+	if params.Tipo == "C" {
+		last_price = str.Call.LastPrice
+	} else {
+		last_price = str.Put.LastPrice
+	}
+	return fmt.Sprintf(formatD, params.Tipo, params.S, params.K, last_price,
+		365 * params.T, round_down(params.Sigma, 4),
 		round_down(mnnC, 4), round_down(delta, 4), round_down(gamma, 4))
 }
 
 func get_header(){
 	formatH := "%6s %6s %6s %10s %10s %10s %10s %10s %10s\n"
 	fmt.Printf(formatH, "tipo", "S0",  "K", "Price",  "Matur", "IV", "Mnn", "delta", "gamma")
+}
+
+func money_ness(yf_params *Yf_params, str *finance.Straddle) (float64, bool,
+	float64, bool){
+	mnnC := (yf_params.S0 - str.Call.Strike) / str.Call.Strike
+	mnnP := (str.Put.Strike - yf_params.S0) / str.Put.Strike
+	mnnPBool := yf_params.S0 < str.Put.Strike
+	mnnCBool := yf_params.S0 > str.Put.Strike
+
+	return mnnC, mnnCBool, mnnP, mnnPBool
 }
 
 func Yf_Options(yf_params *Yf_params) {
@@ -94,27 +110,24 @@ func Yf_Options(yf_params *Yf_params) {
 		yf_params.Exp_date = exp_date[0]
 		strdls := Fetch_Options(yf_params)
 		for _, str := range strdls {
-			ttm_days := ttm_in_days(int64(str.Put.Expiration))
-			mnnC := (yf_params.S0 - str.Call.Strike) / str.Call.Strike
-			mnnP := (str.Put.Strike - yf_params.S0) / str.Put.Strike
-			mnnPBool := yf_params.S0 < str.Put.Strike
-			mnnCBool := yf_params.S0 > str.Put.Strike
+			mnnC, mnnCBool, mnnP, mnnPBool := money_ness(yf_params, str)
 			price_limit := 0.0024 * yf_params.S0
 			min_mnn := -0.05
 			max_mnn := -0.01
 			min_ttm := 10
+			ttm_days := ttm_in_days(int64(str.Put.Expiration))
 			if !mnnCBool {
 				if mnnC < max_mnn && mnnC > min_mnn && str.Call.LastPrice < price_limit && ttm_days > int64(min_ttm){
 					par_calc := Parameters{Tipo: "C", S: yf_params.S0, K: str.Call.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: str.Call.ImpliedVolatility, Q: 0.02}
-					get_output(&par_calc, str.Call.LastPrice, mnnC)
+					fmt.Println(get_output(&par_calc, str, mnnC))
 				}
 			}
 			if !mnnPBool{
 				if mnnP < max_mnn && mnnP > 1.5 * min_mnn && str.Put.LastPrice < price_limit && ttm_days > int64(min_ttm){
 					par_calc := Parameters{Tipo: "P", S: yf_params.S0, K: str.Put.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: str.Put.ImpliedVolatility, Q: 0.02}
-					get_output(&par_calc, str.Put.LastPrice, mnnP)
+					fmt.Println(get_output(&par_calc, str, mnnP))
 				}
 			}
 		}
