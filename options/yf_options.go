@@ -16,10 +16,14 @@ type Yf_params struct {
 	Exp_date     string
 	Min_moneyness float64
 	Max_moneyness float64
-	Min_marurity float64
+	Min_maturity float64
 	Max_price float64
+	Put_moneyness_factor float64
 }
 
+func (p *Yf_params) Set_Put_moneyness_factor(ftr float64){
+	p.Put_moneyness_factor = ftr
+}
 
 func (p *Yf_params) Set_Min_moneyness(mnn float64){
 	p.Min_moneyness = mnn
@@ -30,7 +34,7 @@ func (p *Yf_params) Set_Max_moneyness(mnn float64){
 }
 
 func (p *Yf_params) Set_Min_maturity(mat float64){
-	p.Min_marurity = mat
+	p.Min_maturity = mat
 }
 
 func (p *Yf_params) Set_Max_price(mp float64){
@@ -149,15 +153,11 @@ func Yf_Options(yf_params *Yf_params) {
 		straddles := Fetch_Options(yf_params)
 		for _, straddle := range straddles {
 			mnnC, mnnCBool, mnnP, mnnPBool := money_ness(yf_params, straddle)
-			price_limit := 0.0024 * yf_params.S0
-			min_mnn := -0.1
-			max_mnn := -0.01
-			min_ttm := 10
 			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
 			if !mnnCBool {
-				if mnnC < max_mnn && mnnC > min_mnn &&
-					straddle.Call.LastPrice < price_limit &&
-					ttm_days > int64(min_ttm) {
+				if mnnC < yf_params.Max_moneyness && mnnC > yf_params.Min_moneyness &&
+					straddle.Call.LastPrice < yf_params.Max_price &&
+					ttm_days > int64(yf_params.Min_maturity) {
 					par_calc := OptionsParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility,
 						Q: 0.02}
@@ -165,9 +165,9 @@ func Yf_Options(yf_params *Yf_params) {
 				}
 			}
 			if !mnnPBool {
-				if mnnP < max_mnn && mnnP > 1.5*min_mnn &&
-					straddle.Put.LastPrice < price_limit &&
-					ttm_days > int64(min_ttm) {
+				if mnnP < yf_params.Max_moneyness && mnnP > yf_params.Put_moneyness_factor*yf_params.Min_moneyness &&
+					straddle.Put.LastPrice < yf_params.Max_price &&
+					ttm_days > int64(yf_params.Min_maturity){
 					par_calc := OptionsParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility,
 						Q: 0.02}
@@ -190,6 +190,7 @@ func Test_YF() {
 	(&yf_params).Set_Max_moneyness(-0.01)
 	(&yf_params).Set_Min_maturity(10)
 	(&yf_params).Set_Max_price(0.0024 * yf_params.S0)
+	(&yf_params).Set_Put_moneyness_factor(1.5)
 
 	Yf_Options(&yf_params)
 	fmt.Println(yf_params)
