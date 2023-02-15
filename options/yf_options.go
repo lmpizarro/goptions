@@ -14,7 +14,29 @@ type Yf_params struct {
 	Max_exp_date string
 	Symbol       string
 	Exp_date     string
+	Min_moneyness float64
+	Max_moneyness float64
+	Min_marurity float64
+	Max_price float64
 }
+
+
+func (p *Yf_params) Set_Min_moneyness(mnn float64){
+	p.Min_moneyness = mnn
+}
+
+func (p *Yf_params) Set_Max_moneyness(mnn float64){
+	p.Max_moneyness = mnn
+}
+
+func (p *Yf_params) Set_Min_maturity(mat float64){
+	p.Min_marurity = mat
+}
+
+func (p *Yf_params) Set_Max_price(mp float64){
+	p.Max_price = mp
+}
+
 
 func Set_Max_Exp_date(params *Yf_params, date string) {
 	params.Max_exp_date = date
@@ -128,7 +150,7 @@ func Yf_Options(yf_params *Yf_params) {
 		for _, straddle := range straddles {
 			mnnC, mnnCBool, mnnP, mnnPBool := money_ness(yf_params, straddle)
 			price_limit := 0.0024 * yf_params.S0
-			min_mnn := -0.05
+			min_mnn := -0.1
 			max_mnn := -0.01
 			min_ttm := 10
 			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
@@ -157,14 +179,19 @@ func Yf_Options(yf_params *Yf_params) {
 }
 
 func Test_YF() {
-	var params Yf_params
+	var yf_params Yf_params
 
-	Set_Symbol(&params, "SPY")
-	Set_S0_Market_Price(&params)
-	Set_K_max(&params, 180)
-	Set_K_min(&params, 20)
-	Set_Max_Exp_date(&params, "2023-04-30")
+	Set_Symbol(&yf_params, "AAPL")
+	Set_S0_Market_Price(&yf_params)
+	Set_K_max(&yf_params, 180)
+	Set_K_min(&yf_params, 20)
+	Set_Max_Exp_date(&yf_params, "2023-04-30")
+	(&yf_params).Set_Min_moneyness(-0.1)
+	(&yf_params).Set_Max_moneyness(-0.01)
+	(&yf_params).Set_Min_maturity(10)
+	(&yf_params).Set_Max_price(0.0024 * yf_params.S0)
 
-	Yf_Options(&params)
+	Yf_Options(&yf_params)
+	fmt.Println(yf_params)
 
 }
