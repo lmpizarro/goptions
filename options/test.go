@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-func Test(){
-	params := Parameters{S: 100.0, K: 100.0,
+func Test() {
+	params := OptionsParameters{S: 100.0, K: 100.0,
 		Tipo: "P", T: 1, Sigma: .4, Q: 0.01, R: 0.04}
 
 	PBs := Bs(&params)
@@ -52,9 +52,12 @@ func Test(){
 
 	fmt.Println(rhoC, rhoP)
 
-	params.K = 50; params.S = 49
-	params.T = 0.3846; params.R = 0.05
-	params.Sigma = .2; params.Q = 0.0;
+	params.K = 50
+	params.S = 49
+	params.T = 0.3846
+	params.R = 0.05
+	params.Sigma = .2
+	params.Q = 0.0
 	params.Tipo = "C"
 
 	gamma = Gamma(&params)

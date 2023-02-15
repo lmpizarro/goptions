@@ -16,7 +16,7 @@ func process(exp_dates [][]string, symbol string,
 	limits *Limits, wg *sync.WaitGroup) {
 
 	time1 := time.Now().Unix()
-	params := Parameters{R: 0.04, Q: 0.01, Tipo: "C"}
+	params := OptionsParameters{R: 0.04, Q: 0.01, Tipo: "C"}
 	var count int
 	for _, exp_date := range exp_dates {
 		if limits.Exp_date > exp_date[0] {
@@ -27,7 +27,7 @@ func process(exp_dates [][]string, symbol string,
 					params.S = limits.S0
 					params.K = e[0]
 					params.T = float64(index) / 365
-					iv :=  IvBs(&params, e[1])
+					iv := IvBs(&params, e[1])
 					fmt.Println(round_down(iv, 4), e[0], e[1], round_down(e[2], 4))
 					count++
 				}
@@ -39,8 +39,8 @@ func process(exp_dates [][]string, symbol string,
 	wg.Done()
 }
 
-//	In: symbol string
-//	Out: exp_dates [[2023-05-24]...]
+// In: symbol string
+// Out: exp_dates [[2023-05-24]...]
 func expiration_dates(symbol string) [][]string {
 	// fetch options.
 	p := &options.Params{
@@ -91,7 +91,7 @@ func parse_string_date(date string) (time.Time, int64) {
 	return dt, in_seconds
 }
 
-func get_straddles(exp_date time.Time, symbol string) []*finance.Straddle{
+func get_straddles(exp_date time.Time, symbol string) []*finance.Straddle {
 	params := &options.Params{
 		UnderlyingSymbol: symbol,
 	}
@@ -108,8 +108,8 @@ func get_straddles(exp_date time.Time, symbol string) []*finance.Straddle{
 	return straddles
 }
 
-func ttm_in_days(in_seconds int64) int64{
-	 return (in_seconds - time.Now().Unix()) / (3600 * 24)
+func ttm_in_days(in_seconds int64) int64 {
+	return (in_seconds - time.Now().Unix()) / (3600 * 24)
 }
 
 func fetch_options(symbol, exp_date_str string, limits *Limits) CallPut {
@@ -120,7 +120,7 @@ func fetch_options(symbol, exp_date_str string, limits *Limits) CallPut {
 	exp_date_time, in_seconds := parse_string_date(exp_date_str)
 	straddles := get_straddles(exp_date_time, symbol)
 	ttm_days := ttm_in_days(in_seconds)
- 	for _, straddle := range straddles {
+	for _, straddle := range straddles {
 		call := straddle.Call
 		put := straddle.Put
 		if call != nil && put != nil && ttm_days > 0 {

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"lmpizarro/options/libs"
-
 )
 
 func main() {
@@ -12,7 +11,7 @@ func main() {
 	libs.Test_YF()
 
 	fmt.Println("Tests")
-	params := libs.Parameters{S: 100.0, K: 100.0,
+	params := libs.OptionsParameters{S: 100.0, K: 100.0,
 		Tipo: "P", T: 1, Sigma: .4, Q: 0.01, R: 0.04}
 	fmt.Println(libs.Delta(&params))
 	fmt.Println(libs.Gamma(&params))

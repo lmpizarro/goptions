@@ -8,19 +8,19 @@ import (
 )
 
 type Yf_params struct {
-	S0       float64
-	K_min    float64
-	K_max    float64
+	S0           float64
+	K_min        float64
+	K_max        float64
 	Max_exp_date string
-	Symbol string
-	Exp_date string
+	Symbol       string
+	Exp_date     string
 }
 
-func Set_Max_Exp_date(params *Yf_params, date string){
+func Set_Max_Exp_date(params *Yf_params, date string) {
 	params.Max_exp_date = date
 }
 
-func Set_S0_Market_Price(params *Yf_params){
+func Set_S0_Market_Price(params *Yf_params) {
 	q, err := quote.Get(params.Symbol)
 	if err != nil {
 		panic(err)
@@ -28,23 +28,23 @@ func Set_S0_Market_Price(params *Yf_params){
 	params.S0 = q.RegularMarketPrice
 }
 
-func Set_S0(params *Yf_params, s0 float64){
+func Set_S0(params *Yf_params, s0 float64) {
 	params.S0 = s0
 }
 
-func Set_K_min(params *Yf_params, pct float64){
+func Set_K_min(params *Yf_params, pct float64) {
 	params.K_min = params.S0 * pct / 100
 }
 
-func Set_K_max(params *Yf_params, pct float64){
+func Set_K_max(params *Yf_params, pct float64) {
 	params.K_max = params.S0 * pct / 100
 }
 
-func Set_Symbol(params *Yf_params, symbol string){
+func Set_Symbol(params *Yf_params, symbol string) {
 	params.Symbol = symbol
 }
 
-func limit_exp_dates(exp_dates [][]string, limit string)[][]string{
+func limit_exp_dates(exp_dates [][]string, limit string) [][]string {
 	var limited [][]string
 	for _, exp_date := range exp_dates {
 		if exp_date[0] < limit {
@@ -54,7 +54,7 @@ func limit_exp_dates(exp_dates [][]string, limit string)[][]string{
 	return limited
 }
 
-func Fetch_Options(params *Yf_params) []*finance.Straddle{
+func Fetch_Options(params *Yf_params) []*finance.Straddle {
 	var filtered_straddles []*finance.Straddle
 
 	exp_date_time, _ := parse_string_date(params.Exp_date)
@@ -63,14 +63,14 @@ func Fetch_Options(params *Yf_params) []*finance.Straddle{
 	for _, straddle := range straddles {
 		non_nil_condition := straddle.Call != nil && straddle.Put != nil
 
-		if  non_nil_condition && (int64(straddle.Call.Expiration) <  max_ttm_seconds) {
+		if non_nil_condition && (int64(straddle.Call.Expiration) < max_ttm_seconds) {
 			filtered_straddles = append(filtered_straddles, straddle)
 		}
 	}
 	return filtered_straddles
 }
 
-func get_output(params *Parameters, str *finance.Straddle , mnnC float64) string{
+func get_output(params *OptionsParameters, str *finance.Straddle, mnnC float64) string {
 
 	delta := Delta(params)
 	gamma := Gamma(params)
@@ -82,17 +82,17 @@ func get_output(params *Parameters, str *finance.Straddle , mnnC float64) string
 		last_price = str.Put.LastPrice
 	}
 	return fmt.Sprintf(formatD, params.Tipo, params.S, params.K, last_price,
-		365 * params.T, round_down(params.Sigma, 4),
+		365*params.T, round_down(params.Sigma, 4),
 		round_down(mnnC, 4), round_down(delta, 4), round_down(gamma, 4))
 }
 
-func get_header(){
+func get_header() {
 	formatH := "%6s %6s %6s %10s %10s %10s %10s %10s %10s\n"
-	fmt.Printf(formatH, "tipo", "S0",  "K", "Price",  "Matur", "IV", "Mnn", "delta", "gamma")
+	fmt.Printf(formatH, "tipo", "S0", "K", "Price", "Matur", "IV", "Mnn", "delta", "gamma")
 }
 
 func money_ness(yf_params *Yf_params, str *finance.Straddle) (float64, bool,
-	float64, bool){
+	float64, bool) {
 	mnnC := (yf_params.S0 - str.Call.Strike) / str.Call.Strike
 	mnnP := (str.Put.Strike - yf_params.S0) / str.Put.Strike
 	mnnPBool := yf_params.S0 < str.Put.Strike
@@ -117,15 +117,15 @@ func Yf_Options(yf_params *Yf_params) {
 			min_ttm := 10
 			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
 			if !mnnCBool {
-				if mnnC < max_mnn && mnnC > min_mnn && straddle.Call.LastPrice < price_limit && ttm_days > int64(min_ttm){
-					par_calc := Parameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
+				if mnnC < max_mnn && mnnC > min_mnn && straddle.Call.LastPrice < price_limit && ttm_days > int64(min_ttm) {
+					par_calc := OptionsParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility, Q: 0.02}
 					fmt.Println(get_output(&par_calc, straddle, mnnC))
 				}
 			}
-			if !mnnPBool{
-				if mnnP < max_mnn && mnnP > 1.5 * min_mnn && straddle.Put.LastPrice < price_limit && ttm_days > int64(min_ttm){
-					par_calc := Parameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
+			if !mnnPBool {
+				if mnnP < max_mnn && mnnP > 1.5*min_mnn && straddle.Put.LastPrice < price_limit && ttm_days > int64(min_ttm) {
+					par_calc := OptionsParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility, Q: 0.02}
 					fmt.Println(get_output(&par_calc, straddle, mnnP))
 				}
@@ -134,7 +134,7 @@ func Yf_Options(yf_params *Yf_params) {
 	}
 }
 
-func Test_YF(){
+func Test_YF() {
 	var params Yf_params
 
 	Set_Symbol(&params, "SPY")
