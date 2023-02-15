@@ -155,7 +155,8 @@ func Yf_Options(yf_params *Yf_params) {
 			mnnC, mnnCBool, mnnP, mnnPBool := money_ness(yf_params, straddle)
 			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
 			if !mnnCBool {
-				if mnnC < yf_params.Max_moneyness && mnnC > yf_params.Min_moneyness &&
+				if mnnC < yf_params.Max_moneyness &&
+				    mnnC > yf_params.Min_moneyness &&
 					straddle.Call.LastPrice < yf_params.Max_price &&
 					ttm_days > int64(yf_params.Min_maturity) {
 					par_calc := OptionsParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
@@ -165,7 +166,8 @@ func Yf_Options(yf_params *Yf_params) {
 				}
 			}
 			if !mnnPBool {
-				if mnnP < yf_params.Max_moneyness && mnnP > yf_params.Put_moneyness_factor*yf_params.Min_moneyness &&
+				if mnnP < yf_params.Max_moneyness &&
+				    mnnP > yf_params.Put_moneyness_factor*yf_params.Min_moneyness &&
 					straddle.Put.LastPrice < yf_params.Max_price &&
 					ttm_days > int64(yf_params.Min_maturity){
 					par_calc := OptionsParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
