@@ -13,35 +13,36 @@ type SimulationParameters struct {
 	Price_increment float64
 }
 
-func simulate(opt_params *libs.OptionsParameters, simul_params *SimulationParameters){
+func simulate(option_params *libs.OptionsParameters,
+	simul_params *SimulationParameters){
 	day := Day
-	t := opt_params.T
+	t := option_params.T
 	pinit := simul_params.Init_price // ex 406.0
 	pfinal := simul_params.End_price // ex 423.5
 	delta_precio := simul_params.Price_increment // ex .5
-	cost_init := libs.Bs(opt_params)
+	cost_init := libs.Bs(option_params)
 
-	var c float64
+	var price_of_option float64
 	var values []float64
-	var price float64
-	price = pinit
+	var price_of_equity float64
+	price_of_equity = pinit
 	// See https://www.optionsprofitcalculator.com/calculator/long-call.html
 	// See https://optionstrat.com/
 	for {
 		for {
-			opt_params.T = t
-			opt_params.S = price
-			c = libs.Bs(opt_params)
+			option_params.T = t
+			option_params.S = price_of_equity
+			price_of_option = libs.Bs(option_params)
 			// values = append(values, libs.Round_down(100*(c - cinit)/cinit, 2))
-			values = append(values, libs.Round_down(c-cost_init, 2))
-			if price > pfinal {
+			values = append(values, libs.Round_down(price_of_option-cost_init, 2))
+			if price_of_equity > pfinal {
 				break
 			}
-			price = price + delta_precio
+			price_of_equity = price_of_equity + delta_precio
 		}
-		fmt.Println(libs.Round_down(365*t, 1), values, price)
+		fmt.Println(libs.Round_down(365*t, 1), values, price_of_equity)
 		values = values[:0]
-		price = pinit
+		price_of_equity = pinit
 		t = t - day
 		if t < day {
 			break
