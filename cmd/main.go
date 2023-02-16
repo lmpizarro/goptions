@@ -20,6 +20,7 @@ func main() {
 	var values []float64
 	var price float64
 	price = pinit
+	// See https://www.optionsprofitcalculator.com/calculator/long-call.html
 	for {
 		for {
 			c = libs.Bs(&libs.OptionsParameters{Tipo: "C", S: price, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015})
