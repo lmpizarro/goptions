@@ -8,13 +8,23 @@ import (
 const Day = 1.0 / 365.0
 
 type SimulationParameters struct {
-	Init_price float64
 	End_price float64
+	Init_price float64
 	Price_increment float64
 }
 
+func default_simulate_parameters(options_params *libs.OptionsParameters) *SimulationParameters{
+	var simul_params SimulationParameters
+
+	const percent = 0.015
+	simul_params.End_price = float64(int(options_params.K * (1 + percent)))
+	simul_params.Init_price = float64(int(options_params.K * (1 - percent)))
+	simul_params.Price_increment = .5
+	return &simul_params
+}
+
 func simulate(option_params *libs.OptionsParameters,
-	simul_params *SimulationParameters){
+			  simul_params *SimulationParameters){
 	day := Day
 	t := option_params.T
 	pinit := simul_params.Init_price // ex 406.0
@@ -55,6 +65,10 @@ func main() {
 
 	t := 11.0 / 365.0
 	opt_params := libs.OptionsParameters{Tipo: "C", S: 413.98, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015}
+
+
+	fmt.Println(default_simulate_parameters(&opt_params))
+	panic("")
 	simul_params := SimulationParameters{Price_increment: .5, End_price: 423.5, Init_price: 406.0}
 	simulate(&opt_params, &simul_params)
 	panic("")
