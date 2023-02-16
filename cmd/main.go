@@ -5,13 +5,20 @@ import (
 	"lmpizarro/options/libs"
 )
 
+const Day = 1.0 / 365.0
 
-func simulate(opt_params *libs.OptionsParameters){
-	day := 1.0 / 365
+type SimulationParameters struct {
+	Init_price float64
+	End_price float64
+	Price_increment float64
+}
+
+func simulate(opt_params *libs.OptionsParameters, simul_params *SimulationParameters){
+	day := Day
 	t := opt_params.T
-	pinit := 406.0
-	pfinal := 423.5
-	delta_precio := 0.5
+	pinit := simul_params.Init_price // ex 406.0
+	pfinal := simul_params.End_price // ex 423.5
+	delta_precio := simul_params.Price_increment // ex .5
 	cost_init := libs.Bs(opt_params)
 
 	var c float64
@@ -47,8 +54,8 @@ func main() {
 
 	t := 11.0 / 365.0
 	opt_params := libs.OptionsParameters{Tipo: "C", S: 413.98, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015}
-
-	simulate(&opt_params)
+	simul_params := SimulationParameters{Price_increment: .5, End_price: 423.5, Init_price: 406.0}
+	simulate(&opt_params, &simul_params)
 	panic("")
 	// libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
