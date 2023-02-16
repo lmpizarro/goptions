@@ -24,7 +24,7 @@ func default_simulate_parameters(options_params *libs.OptionsParameters) *Simula
 }
 
 func simulate(option_params *libs.OptionsParameters,
-			  simul_params *SimulationParameters, default_params bool){
+			  simul_params *SimulationParameters, default_params bool) *[][]float64{
 	var sim_params *SimulationParameters
 
 	if default_params {
@@ -41,11 +41,13 @@ func simulate(option_params *libs.OptionsParameters,
 
 	var price_of_option float64
 	var values []float64
+	var rows [][]float64
 	var price_of_equity float64
 	price_of_equity = pinit
 	// See https://www.optionsprofitcalculator.com/calculator/long-call.html
 	// See https://optionstrat.com/
 	for {
+		values = append(values, libs.Round_down(365 *t , 1))
 		for {
 			option_params.T = t
 			option_params.S = price_of_equity
@@ -57,6 +59,7 @@ func simulate(option_params *libs.OptionsParameters,
 			}
 			price_of_equity = price_of_equity + delta_precio
 		}
+		rows = append(rows, values)
 		fmt.Println(libs.Round_down(365*t, 1), values, price_of_equity)
 		values = values[:0]
 		price_of_equity = pinit
@@ -65,6 +68,7 @@ func simulate(option_params *libs.OptionsParameters,
 			break
 		}
 	}
+	return &rows
 }
 
 func main() {
@@ -76,7 +80,8 @@ func main() {
 
 	fmt.Println(default_simulate_parameters(&opt_params))
 	simul_params := SimulationParameters{Price_increment: .5, End_price: 423.5, Init_price: 406.0}
-	simulate(&opt_params, &simul_params, true)
+	rows := simulate(&opt_params, &simul_params, true)
+	fmt.Println(rows)
 	panic("")
 	// libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
