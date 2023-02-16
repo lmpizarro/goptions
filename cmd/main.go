@@ -7,6 +7,38 @@ import (
 
 func main() {
 
+	day := 1.0 / 365
+	t := 11.0 / 365.0
+	pinit := 406.0
+	pfinal := 424.5
+	delta_precio := 0.5
+	// cost := 2.34
+	cinit := libs.Bs(&libs.OptionsParameters{Tipo: "C", S: 413.98, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015})
+	fmt.Println(cinit)
+
+	var c float64
+	var values []float64
+	var price float64
+	price = pinit
+	for {
+		for {
+			price = price + delta_precio
+			c = libs.Bs(&libs.OptionsParameters{Tipo: "C", S: price, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015})
+			values = append(values, libs.Round_down(100*(c - cinit)/cinit, 2))
+			if price > pfinal {
+				break
+			}
+		}
+		fmt.Println(libs.Round_down(365*t, 1), values)
+		values = values[:0]
+		price = pinit
+		t = t - day
+		if t < day {
+			break
+		}
+	}
+
+	panic("")
 	// libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
 

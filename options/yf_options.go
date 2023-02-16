@@ -8,44 +8,43 @@ import (
 )
 
 type Yf_params struct {
-	S0           float64
-	K_min        float64
-	K_max        float64
-	Max_exp_date string
-	Symbol       string
-	Exp_date     string
-	Min_moneyness float64
-	Max_moneyness float64
+	S0                   float64
+	K_min                float64
+	K_max                float64
+	Max_exp_date         string
+	Symbol               string
+	Exp_date             string
+	Min_moneyness        float64
+	Max_moneyness        float64
 	Min_maturity_in_days int64
-	Max_price float64
+	Max_price            float64
 	Put_moneyness_factor float64
-	Type string
+	Type                 string
 }
 
-func (p *Yf_params) Set_Put_moneyness_factor(ftr float64){
+func (p *Yf_params) Set_Put_moneyness_factor(ftr float64) {
 	p.Put_moneyness_factor = ftr
 }
 
-func (p *Yf_params) Set_Type(tpe string){
+func (p *Yf_params) Set_Type(tpe string) {
 	p.Type = tpe
 }
 
-func (p *Yf_params) Set_Min_moneyness(mnn float64){
+func (p *Yf_params) Set_Min_moneyness(mnn float64) {
 	p.Min_moneyness = mnn
 }
 
-func (p *Yf_params) Set_Max_moneyness(mnn float64){
+func (p *Yf_params) Set_Max_moneyness(mnn float64) {
 	p.Max_moneyness = mnn
 }
 
-func (p *Yf_params) Set_Min_maturity(mat int64){
+func (p *Yf_params) Set_Min_maturity(mat int64) {
 	p.Min_maturity_in_days = mat
 }
 
-func (p *Yf_params) Set_Max_price(mp float64){
+func (p *Yf_params) Set_Max_price(mp float64) {
 	p.Max_price = mp
 }
-
 
 func (params *Yf_params) Set_Max_Exp_date(date string) {
 	params.Max_exp_date = date
@@ -59,11 +58,11 @@ func (params *Yf_params) Set_S0_Market_Price() {
 	params.S0 = q.RegularMarketPrice
 }
 
-func (params *Yf_params) Set_S0( s0 float64) {
+func (params *Yf_params) Set_S0(s0 float64) {
 	params.S0 = s0
 }
 
-func (params *Yf_params) Set_K_min( pct float64) {
+func (params *Yf_params) Set_K_min(pct float64) {
 	params.K_min = params.S0 * pct / 100
 }
 
@@ -101,12 +100,11 @@ func Fetch_Options(params *Yf_params) []*finance.Straddle {
 	return filtered_straddles
 }
 
-
-func get_line_out(params *OptionsParameters, str *finance.Straddle, money_ness float64) ([9]float64) {
+func get_line_out(params *OptionsParameters, str *finance.Straddle, money_ness float64) [9]float64 {
 
 	delta := Delta(params)
 	gamma := Gamma(params)
-	var line [9] float64
+	var line [9]float64
 	var last_price float64
 	if params.Tipo == "C" {
 		last_price = str.Call.LastPrice
@@ -116,21 +114,27 @@ func get_line_out(params *OptionsParameters, str *finance.Straddle, money_ness f
 		line[0] = -1
 	}
 
-	line[1] = params.S; line[2] = params.K; line[3] = last_price; line[4] = 365 * params.T
-	line[5] = params.Sigma; line[6] = money_ness; line[7] = delta; line[8] = gamma
+	line[1] = params.S
+	line[2] = params.K
+	line[3] = last_price
+	line[4] = 365 * params.T
+	line[5] = params.Sigma
+	line[6] = money_ness
+	line[7] = delta
+	line[8] = gamma
 
 	return line
 }
 
-func get_output(params *OptionsParameters, str *finance.Straddle, money_ness float64) (string) {
+func get_output(params *OptionsParameters, str *finance.Straddle, money_ness float64) string {
 
-	line := get_line_out(params, str, money_ness )
+	line := get_line_out(params, str, money_ness)
 
 	formatD := "%6s %6.2f %6.2f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f"
-	formatD  = "H%2s S %6.2f K %6.2f P %6.4f T %6.4f V %6.4f M %6.4f D %6.4f G %6.4f"
+	formatD = "H%2s S %6.2f K %6.2f P %6.4f T %6.4f V %6.4f M %6.4f D %6.4f G %6.4f"
 	return fmt.Sprintf(formatD, params.Tipo, line[1], line[2], line[3],
-		line[4], round_down(line[5], 4),
-		round_down(line[6], 4), round_down(line[7], 4), round_down(line[8], 4))
+		line[4], Round_down(line[5], 4),
+		Round_down(line[6], 4), Round_down(line[7], 4), Round_down(line[8], 4))
 }
 
 func get_header() {
@@ -156,9 +160,9 @@ func logic_filter(yf_params *Yf_params, mnnC, last_price float64, ttm_days int64
 		factor = yf_params.Put_moneyness_factor
 	}
 	return mnnC < yf_params.Max_moneyness &&
-				    mnnC > factor * yf_params.Min_moneyness &&
-					last_price < yf_params.Max_price &&
-					ttm_days > yf_params.Min_maturity_in_days
+		mnnC > factor*yf_params.Min_moneyness &&
+		last_price < yf_params.Max_price &&
+		ttm_days > yf_params.Min_maturity_in_days
 }
 
 func Yf_Options(yf_params *Yf_params) {

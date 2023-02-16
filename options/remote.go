@@ -28,7 +28,7 @@ func process(exp_dates [][]string, symbol string,
 					params.K = e[0]
 					params.T = float64(index) / 365
 					iv := IvBs(&params, e[1])
-					fmt.Println(round_down(iv, 4), e[0], e[1], round_down(e[2], 4))
+					fmt.Println(Round_down(iv, 4), e[0], e[1], Round_down(e[2], 4))
 					count++
 				}
 			}
@@ -69,7 +69,7 @@ type CallPut struct {
 	Mput  *map[int][][]float64
 }
 
-func round_down(num float64, n float64) float64 {
+func Round_down(num float64, n float64) float64 {
 	return math.Floor(num*math.Pow(10, n)) / (math.Pow(10, n))
 }
 
