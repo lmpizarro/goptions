@@ -24,12 +24,19 @@ func default_simulate_parameters(options_params *libs.OptionsParameters) *Simula
 }
 
 func simulate(option_params *libs.OptionsParameters,
-			  simul_params *SimulationParameters){
+			  simul_params *SimulationParameters, default_params bool){
+	var sim_params *SimulationParameters
+
+	if default_params {
+		sim_params = default_simulate_parameters(option_params)
+	} else {
+		sim_params = simul_params
+	}
 	day := Day
 	t := option_params.T
-	pinit := simul_params.Init_price // ex 406.0
-	pfinal := simul_params.End_price // ex 423.5
-	delta_precio := simul_params.Price_increment // ex .5
+	pinit := sim_params.Init_price // ex 406.0
+	pfinal := sim_params.End_price // ex 423.5
+	delta_precio := sim_params.Price_increment // ex .5
 	cost_init := libs.Bs(option_params)
 
 	var price_of_option float64
@@ -68,9 +75,8 @@ func main() {
 
 
 	fmt.Println(default_simulate_parameters(&opt_params))
-	panic("")
 	simul_params := SimulationParameters{Price_increment: .5, End_price: 423.5, Init_price: 406.0}
-	simulate(&opt_params, &simul_params)
+	simulate(&opt_params, &simul_params, true)
 	panic("")
 	// libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
