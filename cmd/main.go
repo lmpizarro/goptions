@@ -5,27 +5,28 @@ import (
 	"lmpizarro/options/libs"
 )
 
-func main() {
 
+func simulate(opt_params *libs.OptionsParameters){
 	day := 1.0 / 365
-	t := 11.0 / 365.0
+	t := opt_params.T
 	pinit := 406.0
 	pfinal := 423.5
 	delta_precio := 0.5
-	// cost := 2.34
-	cinit := libs.Bs(&libs.OptionsParameters{Tipo: "C", S: 413.98, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015})
-	fmt.Println(cinit)
+	cost_init := libs.Bs(opt_params)
 
 	var c float64
 	var values []float64
 	var price float64
 	price = pinit
 	// See https://www.optionsprofitcalculator.com/calculator/long-call.html
+	// See https://optionstrat.com/
 	for {
 		for {
-			c = libs.Bs(&libs.OptionsParameters{Tipo: "C", S: price, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015})
+			opt_params.T = t
+			opt_params.S = price
+			c = libs.Bs(opt_params)
 			// values = append(values, libs.Round_down(100*(c - cinit)/cinit, 2))
-			values = append(values, libs.Round_down(c-cinit, 2))
+			values = append(values, libs.Round_down(c-cost_init, 2))
 			if price > pfinal {
 				break
 			}
@@ -39,7 +40,15 @@ func main() {
 			break
 		}
 	}
+}
 
+func main() {
+
+
+	t := 11.0 / 365.0
+	opt_params := libs.OptionsParameters{Tipo: "C", S: 413.98, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015}
+
+	simulate(&opt_params)
 	panic("")
 	// libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
