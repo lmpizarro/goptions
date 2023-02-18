@@ -13,32 +13,25 @@ type SimulationParameters struct {
 	Price_increment float64`json:"price_increment"`
 }
 
-func Default_simulate_parameters(options_params *OptionsParameters) *SimulationParameters{
+func Default_simulate_parameters(options_params *OptionsParameters) SimulationParameters{
 	var simul_params SimulationParameters
 
 	const percent = 0.015
 	simul_params.End_price = float64(int(options_params.K * (1 + percent)))
 	simul_params.Init_price = float64(int(options_params.K * (1 - percent)))
 	simul_params.Price_increment = .5
-	return &simul_params
+	return simul_params
 }
 
 
 func Simulate_long(option_params *OptionsParameters,
-			  simul_params *SimulationParameters, default_params bool) ([][]float64, *SimulationParameters){
-	var sim_params *SimulationParameters
+			  simul_params *SimulationParameters) [][]float64{
 
-
-	if default_params {
-		sim_params = Default_simulate_parameters(option_params)
-	} else {
-		sim_params = simul_params
-	}
 	day := Day
 	t := option_params.T
-	pinit := sim_params.Init_price // ex 406.0
-	pfinal := sim_params.End_price // ex 423.5
-	delta_precio := sim_params.Price_increment // ex .5
+	pinit := simul_params.Init_price // ex 406.0
+	pfinal := simul_params.End_price // ex 423.5
+	delta_precio := simul_params.Price_increment // ex .5
 	cost_init := Bs(option_params)
 
 	var price_of_option float64
@@ -69,7 +62,7 @@ func Simulate_long(option_params *OptionsParameters,
 			break
 		}
 	}
-	return rows, sim_params
+	return rows
 }
 
 type ResultSimulation struct {
@@ -122,9 +115,10 @@ func Test_simulation() []byte {
 
 
 	simul_params := SimulationParameters{Price_increment: .5, End_price: 423.5, Init_price: 406.0}
-	rows, sim_params := Simulate_long(&opt_params, &simul_params, true)
+	simul_params = Default_simulate_parameters(&opt_params)
+	rows := Simulate_long(&opt_params, &simul_params)
 
-	u := Rows_simulation_to_json(rows, sim_params, &opt_params)
+	u := Rows_simulation_to_json(rows, &simul_params, &opt_params)
 
 	return u
 }
