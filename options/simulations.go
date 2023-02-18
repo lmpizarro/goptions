@@ -8,9 +8,9 @@ import (
 const Day = 1.0 / 365.0
 
 type SimulationParameters struct {
-	End_price float64
-	Init_price float64
-	Price_increment float64
+	End_price float64	`json:"end_price"`
+	Init_price float64	`json:"init_price"`
+	Price_increment float64`json:"price_increment"`
 }
 
 func Default_simulate_parameters(options_params *OptionsParameters) *SimulationParameters{
@@ -25,7 +25,7 @@ func Default_simulate_parameters(options_params *OptionsParameters) *SimulationP
 
 
 func Simulate_long(option_params *OptionsParameters,
-			  simul_params *SimulationParameters, default_params bool) [][]float64{
+			  simul_params *SimulationParameters, default_params bool) ([][]float64, *SimulationParameters){
 	var sim_params *SimulationParameters
 
 
@@ -69,17 +69,21 @@ func Simulate_long(option_params *OptionsParameters,
 			break
 		}
 	}
-	return rows
+	return rows, sim_params
 }
 
 type ResultSimulation struct {
+	Sim_params *SimulationParameters
+	Opt_params *OptionsParameters
 	Simulation []struct {
 		Day    int       `json:"day"`
 		Prices []float64 `json:"prices"`
 	} `json:"rows"`
 }
 
-func Rows_simulation_to_json(rows [][]float64) []byte{
+func Rows_simulation_to_json(rows [][]float64,
+								simul_params *SimulationParameters,
+								opt_params *OptionsParameters) []byte{
 	var results ResultSimulation
 	for _, row := range rows {
 		sim_result := struct{
@@ -89,6 +93,8 @@ func Rows_simulation_to_json(rows [][]float64) []byte{
 		results.Simulation = append(results.Simulation,
 			struct{Day int "json:\"day\""; Prices []float64 "json:\"prices\""}(sim_result))
 	}
+	results.Sim_params = simul_params
+	results.Opt_params = opt_params
 	u, _ := json.Marshal(results)
 	return u
 }
@@ -109,3 +115,16 @@ func Rows_simulation_to_json(rows [][]float64) []byte{
 		}{}
 }
 */
+
+func Test_simulation() []byte {
+	t := 11.0 / 365.0
+	opt_params := OptionsParameters{Tipo: "C", S: 413.98, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015}
+
+
+	simul_params := SimulationParameters{Price_increment: .5, End_price: 423.5, Init_price: 406.0}
+	rows, sim_params := Simulate_long(&opt_params, &simul_params, true)
+
+	u := Rows_simulation_to_json(rows, sim_params, &opt_params)
+
+	return u
+}

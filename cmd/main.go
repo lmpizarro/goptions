@@ -8,15 +8,7 @@ import (
 
 func main() {
 
-	t := 11.0 / 365.0
-	opt_params := libs.OptionsParameters{Tipo: "C", S: 413.98, K: 420, T: t, R: 0.045, Sigma: 0.15, Q: 0.015}
-
-
-	fmt.Println(libs.Default_simulate_parameters(&opt_params))
-	simul_params := libs.SimulationParameters{Price_increment: .5, End_price: 423.5, Init_price: 406.0}
-	rows := libs.Simulate_long(&opt_params, &simul_params, true)
-
-	fmt.Println(string(libs.Rows_simulation_to_json(rows)))
+	fmt.Println(string(libs.Test_simulation()))
 	panic("")
 	// libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
