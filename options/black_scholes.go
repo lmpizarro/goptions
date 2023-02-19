@@ -195,13 +195,13 @@ func IvBsNewton(p *OptionsParameters, sigma0, price, tol float64) (int, float64)
 func TestNewton() (int, float64) {
 	t := 110.0 / 365.0
 
-	opt_params := OptionsParameters{Tipo: "P", S: 42, K: 42, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
+	opt_params := OptionsParameters{Tipo: "C", S: 83, K: 200, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
 	c := Bs(&opt_params)
 
 	sigma0 := IV_Brenner_Subrahmanyam(&opt_params, c)
 	// sigma0 = 0.6
 	fmt.Println(sigma0)
-	s, sigma := IvBsSecant(&opt_params, c)
+	s, sigma := IvBsNewton(&opt_params, sigma0, c, 0.000001)
 	return s, sigma
 }
 // Solves Black-Scholes-Merton Implied Volatility
@@ -213,10 +213,9 @@ func IvBsSecant(p *OptionsParameters, price float64) (int, float64) {
 	x0 := .0001
 	steps := 10
 	p.Sigma = x1
-	f1 := p.func_diff(price)
+	f1 := p.func_diff_bs(price)
 	p.Sigma = x0
-	f0 := p.func_diff(price)
-
+	f0 := p.func_diff_bs(price)
 
 	for i = 0; i < steps; i++ {
 		x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
@@ -226,12 +225,9 @@ func IvBsSecant(p *OptionsParameters, price float64) (int, float64) {
 			break
 		}
 		fmt.Println(x1, x0)
+		f0 = f1
 		p.Sigma = x1
-		f1 = p.func_diff(price)
-		p.Sigma = x0
-		f0 = p.func_diff(price)
-
-
+		f1 = p.func_diff_bs(price)
 	}
 	return i, x1
 }
@@ -247,7 +243,7 @@ func IvBsBisection_A(p *OptionsParameters, price float64) (int, float64) {
 
 	for i = 0; i < steps; i++ {
 		p.Sigma = sigma
-		diff = p.func_diff(price)
+		diff = p.func_diff_bs(price)
 		if diff > 0 {
 			s_high = sigma
 			sigma = .5 * (s_low + s_high)
@@ -270,7 +266,7 @@ func samesign(a, b float64) bool{
 	return math.Signbit(a) == math.Signbit(b)
 }
 
-func (p *OptionsParameters)func_diff(price float64) float64{
+func (p *OptionsParameters)func_diff_bs(price float64) float64{
 	return Bs(p) - price
 }
 
