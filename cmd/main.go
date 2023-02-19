@@ -9,7 +9,7 @@ import (
 func main() {
 
 	fmt.Println(libs.TestNewton())
-	panic("")
+	panic("main")
 	// libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
 

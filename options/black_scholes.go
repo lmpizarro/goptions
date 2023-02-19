@@ -195,13 +195,14 @@ func IvBsNewton(p *OptionsParameters, sigma0, price, tol float64) (int, float64)
 func TestNewton() (int, float64) {
 	t := 110.0 / 365.0
 
-	opt_params := OptionsParameters{Tipo: "C", S: 83, K: 200, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
+	opt_params := OptionsParameters{Tipo: "C", S: 200, K: 200, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
 	c := Bs(&opt_params)
 
 	sigma0 := IV_Brenner_Subrahmanyam(&opt_params, c)
 	// sigma0 = 0.6
 	fmt.Println(sigma0)
-	s, sigma := IvBsNewton(&opt_params, sigma0, c, 0.000001)
+	// s, sigma := IvBsNewton(&opt_params, sigma0, c, 0.000001)
+	s, sigma := IvBsSecant(&opt_params, c)
 	return s, sigma
 }
 // Solves Black-Scholes-Merton Implied Volatility
@@ -209,7 +210,7 @@ func IvBsSecant(p *OptionsParameters, price float64) (int, float64) {
 	var x2 float64
 	var i int
 
-	x1 := 10.0
+	x1 := 1.0
 	x0 := .0001
 	steps := 10
 	p.Sigma = x1
@@ -219,12 +220,18 @@ func IvBsSecant(p *OptionsParameters, price float64) (int, float64) {
 
 	for i = 0; i < steps; i++ {
 		x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+
 		x0 = x1
 		x1 = x2
-		if math.Abs(x1-x0) < 0.01 {
+
+		if	math.Abs(f0-f1) < 0.000001{
+			panic("convergence error")
+		}
+
+		if math.Abs(x2-x0) < 0.000001 {
 			break
 		}
-		fmt.Println(x1, x0)
+
 		f0 = f1
 		p.Sigma = x1
 		f1 = p.func_diff_bs(price)
