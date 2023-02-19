@@ -160,6 +160,17 @@ func Vega(p *OptionsParameters) float64 {
 
 }
 
+func IV_Brenner_Subrahmanyam(p *OptionsParameters, C float64) float64{
+	d := (p.S - p.K) / 2
+	return math.Sqrt(2 * math.Pi/p.T) * (C - d) / p.S
+}
+
+func IV_Bharadia_Christofides_Salkin(p *OptionsParameters, C float64) float64{
+
+	d := (p.S - p.K) / 2
+	return math.Sqrt(2 * math.Pi/p.T) * (C - d) / (p.S - d)
+}
+
 // Solves Black-Scholes-Merton Implied Volatility by Newton Rapshon method
 func IvBsNewton(p *OptionsParameters, sigma0, price, tol float64) (int, float64) {
 	var (
@@ -178,6 +189,16 @@ func IvBsNewton(p *OptionsParameters, sigma0, price, tol float64) (int, float64)
 		}
 	}
 	return i, sigma0
+}
+
+func TestNewton() (int, float64){
+	t := 110.0 / 365.0
+
+	opt_params := OptionsParameters{Tipo: "P", S: 420, K: 420, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
+	c := Bs(&opt_params)
+
+	s, sigma := IvBsNewton(&opt_params, IV_Bharadia_Christofides_Salkin(&opt_params, c), c, 0.001)
+	return s, sigma
 }
 
 // Solves Black-Scholes-Merton Implied Volatility
