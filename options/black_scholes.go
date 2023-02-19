@@ -1,6 +1,7 @@
 package libs
 
 import (
+	"fmt"
 	"math"
 
 	"gonum.org/v1/gonum/stat/distuv"
@@ -160,15 +161,15 @@ func Vega(p *OptionsParameters) float64 {
 
 }
 
-func IV_Brenner_Subrahmanyam(p *OptionsParameters, C float64) float64{
+func IV_Brenner_Subrahmanyam(p *OptionsParameters, C float64) float64 {
 	d := (p.S - p.K) / 2
-	return math.Sqrt(2 * math.Pi/p.T) * (C - d) / p.S
+	return math.Sqrt(2*math.Pi/p.T) * (C - d) / p.S
 }
 
-func IV_Bharadia_Christofides_Salkin(p *OptionsParameters, C float64) float64{
+func IV_Bharadia_Christofides_Salkin(p *OptionsParameters, C float64) float64 {
 
 	d := (p.S - p.K) / 2
-	return math.Sqrt(2 * math.Pi/p.T) * (C - d) / (p.S - d)
+	return math.Sqrt(2*math.Pi/p.T) * (C - d) / (p.S - d)
 }
 
 // Solves Black-Scholes-Merton Implied Volatility by Newton Rapshon method
@@ -191,27 +192,62 @@ func IvBsNewton(p *OptionsParameters, sigma0, price, tol float64) (int, float64)
 	return i, sigma0
 }
 
-func TestNewton() (int, float64){
+func TestNewton() (int, float64) {
 	t := 110.0 / 365.0
 
-	opt_params := OptionsParameters{Tipo: "P", S: 420, K: 420, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
+	opt_params := OptionsParameters{Tipo: "P", S: 42, K: 42, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
 	c := Bs(&opt_params)
 
-	s, sigma := IvBsNewton(&opt_params, IV_Bharadia_Christofides_Salkin(&opt_params, c), c, 0.001)
+	sigma0 := IV_Brenner_Subrahmanyam(&opt_params, c)
+	// sigma0 = 0.6
+	fmt.Println(sigma0)
+	s, sigma := IvBsSecant(&opt_params, c)
 	return s, sigma
 }
-
 // Solves Black-Scholes-Merton Implied Volatility
-func IvBs(p *OptionsParameters, price float64) float64 {
+func IvBsSecant(p *OptionsParameters, price float64) (int, float64) {
+	var x2 float64
+	var i int
+
+	x1 := 10.0
+	x0 := .0001
+	steps := 10
+	p.Sigma = x1
+	f1 := p.func_diff(price)
+	p.Sigma = x0
+	f0 := p.func_diff(price)
+
+
+	for i = 0; i < steps; i++ {
+		x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+		x0 = x1
+		x1 = x2
+		if math.Abs(x1-x0) < 0.01 {
+			break
+		}
+		fmt.Println(x1, x0)
+		p.Sigma = x1
+		f1 = p.func_diff(price)
+		p.Sigma = x0
+		f0 = p.func_diff(price)
+
+
+	}
+	return i, x1
+}
+// Solves Black-Scholes-Merton Implied Volatility
+func IvBsBisection_A(p *OptionsParameters, price float64) (int, float64) {
 	var diff float64
+	var i int
 
 	s_high := 10.0
 	s_low := .0001
 	sigma := .5 * (s_low + s_high)
+	steps := 100
 
-	for i := 0; i < 1000; i++ {
+	for i = 0; i < steps; i++ {
 		p.Sigma = sigma
-		diff = Bs(p) - price
+		diff = p.func_diff(price)
 		if diff > 0 {
 			s_high = sigma
 			sigma = .5 * (s_low + s_high)
@@ -220,14 +256,22 @@ func IvBs(p *OptionsParameters, price float64) float64 {
 			sigma = .5 * (s_low + s_high)
 		}
 
-		if math.Abs(diff) > .0001 {
+		if math.Abs(diff) > .01 {
 			continue
 		} else {
 			break
 		}
 	}
 
-	return sigma
+	return i, sigma
+}
+
+func samesign(a, b float64) bool{
+	return math.Signbit(a) == math.Signbit(b)
+}
+
+func (p *OptionsParameters)func_diff(price float64) float64{
+	return Bs(p) - price
 }
 
 // OptionsParameters

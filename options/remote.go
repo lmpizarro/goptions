@@ -27,7 +27,7 @@ func process(exp_dates [][]string, symbol string,
 					params.S = limits.S0
 					params.K = e[0]
 					params.T = float64(index) / 365
-					iv := IvBs(&params, e[1])
+					_, iv := IvBsBisection_A(&params, e[1])
 					fmt.Println(Round_down(iv, 4), e[0], e[1], Round_down(e[2], 4))
 					count++
 				}

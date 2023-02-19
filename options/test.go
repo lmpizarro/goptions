@@ -32,8 +32,8 @@ func Test() {
 	fmt.Println("vega ", vega)
 
 	params.Tipo = "P"
-	IV := IvBs(&params, PBs)
-	fmt.Println("IV ", IV)
+	s, IV := IvBsBisection_A(&params, PBs)
+	fmt.Println("IV ", IV, "Steps", s)
 
 	_, IV = IvBsNewton(&params, 0.1, PBs, 0.001)
 	fmt.Println("IV Newton ", IV)
