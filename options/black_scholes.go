@@ -1,9 +1,7 @@
 package libs
 
 import (
-	"fmt"
 	"math"
-
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
@@ -192,20 +190,8 @@ func IvBsNewton(p *OptionsParameters, sigma0, price, tol float64) (int, float64)
 	return i, sigma0
 }
 
-func TestNewton() (int, float64) {
-	t := 110.0 / 365.0
-
-	opt_params := OptionsParameters{Tipo: "C", S: 200, K: 200, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
-	c := Bs(&opt_params)
-
-	sigma0 := IV_Brenner_Subrahmanyam(&opt_params, c)
-	// sigma0 = 0.6
-	fmt.Println(sigma0)
-	// s, sigma := IvBsNewton(&opt_params, sigma0, c, 0.000001)
-	s, sigma := IvBsSecant(&opt_params, c)
-	return s, sigma
-}
 // Solves Black-Scholes-Merton Implied Volatility
+// by the secant method
 func IvBsSecant(p *OptionsParameters, price float64) (int, float64) {
 	var x2 float64
 	var i int

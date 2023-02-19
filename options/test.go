@@ -72,3 +72,20 @@ func Test() {
 	fmt.Println("rho Hull pag 440", rhoC)
 
 }
+
+
+func TestNewton() (int, float64) {
+	t := 110.0 / 365.0
+
+	opt_params := OptionsParameters{Tipo: "C", S: 200, K: 200, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
+	c := Bs(&opt_params)
+
+	sigma0 := IV_Brenner_Subrahmanyam(&opt_params, c)
+	// sigma0 = 0.6
+	fmt.Println(sigma0)
+	s, sigma := IvBsNewton(&opt_params, sigma0, c, 0.000001)
+	// s, sigma := IvBsSecant(&opt_params, c)
+	return s, sigma
+}
+
+
