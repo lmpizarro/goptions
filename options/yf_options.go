@@ -197,22 +197,3 @@ func Yf_Options(yf_params *Yf_params) {
 	}
 }
 
-func Test_YF() {
-	var yf_params Yf_params
-
-	(&yf_params).Set_Symbol("AAPL")
-	(&yf_params).Set_S0_Market_Price()
-	(&yf_params).Set_K_max(180)
-	(&yf_params).Set_K_min(20)
-	(&yf_params).Set_Max_Exp_date("2023-04-30")
-	(&yf_params).Set_Min_moneyness(-0.1)
-	(&yf_params).Set_Max_moneyness(-0.01)
-	(&yf_params).Set_Min_maturity(10)
-	(&yf_params).Set_Max_price(0.0024 * yf_params.S0)
-	(&yf_params).Set_Put_moneyness_factor(1.5)
-	(&yf_params).Set_Type("C")
-
-	Yf_Options(&yf_params)
-	fmt.Println(yf_params)
-
-}

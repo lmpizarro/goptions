@@ -77,15 +77,40 @@ func Test() {
 func TestNewton() (int, float64) {
 	t := 110.0 / 365.0
 
-	opt_params := OptionsParameters{Tipo: "C", S: 200, K: 200, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
+	opt_params := OptionsParameters{Tipo: "C", S: 200, K: 180, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
 	c := Bs(&opt_params)
 
+
 	sigma0 := IV_Brenner_Subrahmanyam(&opt_params, c)
-	// sigma0 = 0.6
-	fmt.Println(sigma0)
+	fmt.Println("sigma0 BS", sigma0)
+	sigma0, _ = IV_Corrado_Miller(&opt_params, c)
+	fmt.Println("sigma0 CM", sigma0)
+	sigma0 = IV_Bharadia_Christofides_Salkin(&opt_params, c)
+	fmt.Println("sigma0 CS", sigma0)
 	s, sigma := IvBsNewton(&opt_params, sigma0, c, 0.000001)
 	// s, sigma := IvBsSecant(&opt_params, c)
 	return s, sigma
 }
+
+func Test_YF() {
+	var yf_params Yf_params
+
+	(&yf_params).Set_Symbol("AAPL")
+	(&yf_params).Set_S0_Market_Price()
+	(&yf_params).Set_K_max(180)
+	(&yf_params).Set_K_min(20)
+	(&yf_params).Set_Max_Exp_date("2023-04-30")
+	(&yf_params).Set_Min_moneyness(-0.1)
+	(&yf_params).Set_Max_moneyness(-0.01)
+	(&yf_params).Set_Min_maturity(10)
+	(&yf_params).Set_Max_price(0.0024 * yf_params.S0)
+	(&yf_params).Set_Put_moneyness_factor(1.5)
+	(&yf_params).Set_Type("C")
+
+	Yf_Options(&yf_params)
+	fmt.Println(yf_params)
+
+}
+
 
 
