@@ -8,10 +8,10 @@ import (
 
 func main() {
 
-	fmt.Println(libs.TestNewton())
-	panic("main")
+	// fmt.Println(libs.TestNewton())
 	// libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
+	panic("main")
 
 	fmt.Println("Tests")
 	params := libs.OptionsParameters{S: 100.0, K: 100.0,

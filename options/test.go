@@ -105,7 +105,7 @@ func Test_YF() {
 	(&yf_params).Set_Min_maturity(10)
 	(&yf_params).Set_Max_price(0.0024 * yf_params.S0)
 	(&yf_params).Set_Put_moneyness_factor(1.5)
-	(&yf_params).Set_Type("C")
+	(&yf_params).Set_Type("C", true)
 
 	Yf_Options(&yf_params)
 	fmt.Println(yf_params)

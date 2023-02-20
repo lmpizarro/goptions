@@ -24,30 +24,48 @@ type Yf_params struct {
 
 func (p *Yf_params) Set_Put_moneyness_factor(ftr float64) {
 	p.Put_moneyness_factor = ftr
+	fmt.Println(set_literal_float("Put moneyness factor: ", p.Put_moneyness_factor))
 }
 
-func (p *Yf_params) Set_Type(tpe string) {
+func (p *Yf_params) Set_Type(tpe string, v bool) {
 	p.Type = tpe
+	if v {
+		fmt.Println(set_literal_string("Option type", p.Type))
+	}
 }
 
 func (p *Yf_params) Set_Min_moneyness(mnn float64) {
 	p.Min_moneyness = mnn
+	fmt.Println(set_literal_float("Min moneyness", float64(p.Min_moneyness)))
 }
 
 func (p *Yf_params) Set_Max_moneyness(mnn float64) {
 	p.Max_moneyness = mnn
+	fmt.Println(set_literal_float("Max moneyness", float64(p.Max_moneyness)))
 }
 
 func (p *Yf_params) Set_Min_maturity(mat int64) {
 	p.Min_maturity_in_days = mat
+	fmt.Println(set_literal_float("Min maturity", float64(p.Min_maturity_in_days)))
 }
+
+func set_literal_float(literal string, value float64)string{
+	return fmt.Sprintf("Set %v to % v", literal, Round_down(value,4))
+}
+
+func set_literal_string(literal string, value string)string{
+	return fmt.Sprintf("Set %v to % v", literal, value)
+}
+
 
 func (p *Yf_params) Set_Max_price(mp float64) {
 	p.Max_price = mp
+	fmt.Println(set_literal_float("Max price", p.Max_price))
 }
 
 func (params *Yf_params) Set_Max_Exp_date(date string) {
 	params.Max_exp_date = date
+	fmt.Println(set_literal_string("Max expiration date", params.Max_exp_date))
 }
 
 func (params *Yf_params) Set_S0_Market_Price() {
@@ -56,6 +74,7 @@ func (params *Yf_params) Set_S0_Market_Price() {
 		panic(err)
 	}
 	params.S0 = q.RegularMarketPrice
+	fmt.Println(set_literal_float("S0", params.S0))
 }
 
 func (params *Yf_params) Set_S0(s0 float64) {
@@ -64,14 +83,18 @@ func (params *Yf_params) Set_S0(s0 float64) {
 
 func (params *Yf_params) Set_K_min(pct float64) {
 	params.K_min = params.S0 * pct / 100
+	fmt.Println(set_literal_float("K min", params.K_min))
 }
 
 func (params *Yf_params) Set_K_max(pct float64) {
 	params.K_max = params.S0 * pct / 100
+
+	fmt.Println(set_literal_float("K max", params.K_max))
 }
 
 func (params *Yf_params) Set_Symbol(symbol string) {
 	params.Symbol = symbol
+	fmt.Println(set_literal_string("Symbol", params.Symbol))
 }
 
 func limit_exp_dates(exp_dates [][]string, limit string) [][]string {
@@ -152,7 +175,7 @@ func money_ness(yf_params *Yf_params, str *finance.Straddle) (float64, bool,
 	return mnnC, mnnCBool, mnnP, mnnPBool
 }
 
-func logic_filter(yf_params *Yf_params, mnnC, last_price float64, ttm_days int64) bool {
+func call_put_filter_01(yf_params *Yf_params, mnnC, last_price float64, ttm_days int64) bool {
 	var factor float64
 	if yf_params.Type == "C" {
 		factor = 1.0
@@ -177,16 +200,16 @@ func Yf_Options(yf_params *Yf_params) {
 			mnnC, mnnCBool, mnnP, mnnPBool := money_ness(yf_params, straddle)
 			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
 			if !mnnCBool {
-				if logic_filter(yf_params, mnnC, straddle.Call.LastPrice, ttm_days) {
+				if call_put_filter_01(yf_params, mnnC, straddle.Call.LastPrice, ttm_days) {
 					par_calc := OptionsParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility,
 						Q: 0.02}
 					fmt.Println(get_output(&par_calc, straddle, mnnC))
 				}
 			}
-			(yf_params).Set_Type("P")
+			(yf_params).Set_Type("P", false)
 			if !mnnPBool {
-				if logic_filter(yf_params, mnnP, straddle.Put.LastPrice, ttm_days) {
+				if call_put_filter_01(yf_params, mnnP, straddle.Put.LastPrice, ttm_days) {
 					par_calc := OptionsParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
 						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility,
 						Q: 0.02}
