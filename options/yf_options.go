@@ -149,9 +149,9 @@ func get_line_out(params *OptionsParameters, str *finance.Straddle, money_ness f
 	return line
 }
 
-func get_output(params *OptionsParameters, str *finance.Straddle, money_ness float64) string {
+func get_output(params *OptionsParameters, straddle *finance.Straddle, money_ness float64) string {
 
-	line := get_line_out(params, str, money_ness)
+	line := get_line_out(params, straddle, money_ness)
 
 	formatD := "%6s %6.2f %6.2f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f"
 	formatD = "H%2s S %6.2f K %6.2f P %6.4f T %6.4f V %6.4f M %6.4f D %6.4f G %6.4f"
@@ -201,9 +201,12 @@ func call_put_filter_02(yf_params *Yf_params, mnnC float64, straddle *finance.St
 }
 
 
-func Yf_Options(yf_params *Yf_params) {
+func Yf_Options(yf_params *Yf_params) ([][9]float64, [][9]float64){
 	exp_dates := expiration_dates(yf_params.Symbol)
 	exp_dates = limit_exp_dates(exp_dates, yf_params.Max_exp_date)
+
+	var puts [][9]float64
+	var calls [][9]float64
 
 	get_header()
 	for _, exp_date := range exp_dates {
@@ -214,21 +217,24 @@ func Yf_Options(yf_params *Yf_params) {
 			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
 
 			(yf_params).Set_Type("C", false)
-			if call_put_filter_01(yf_params, mnnC, straddle, ttm_days) {
+			if call_put_filter_02(yf_params, mnnC, straddle, ttm_days) {
 				par_calc := OptionsParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
 					T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility,
 					Q: 0.02}
 				fmt.Println(get_output(&par_calc, straddle, mnnC))
+				calls = append(calls, get_line_out(&par_calc, straddle, mnnC))
 			}
 			(yf_params).Set_Type("P", false)
-			if call_put_filter_01(yf_params, mnnP, straddle, ttm_days) {
+			if call_put_filter_02(yf_params, mnnP, straddle, ttm_days) {
 				par_calc := OptionsParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
 					T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility,
 					Q: 0.02}
-				fmt.Println(get_output(&par_calc, straddle, mnnP))
+				fmt.Println(get_output(&par_calc, straddle, mnnC))
+				puts = append(puts,get_line_out(&par_calc, straddle, mnnP))
 			}
 
 		}
 	}
+	return calls, puts
 }
 
