@@ -95,15 +95,15 @@ func TestNewton() (int, float64) {
 func Test_YF() {
 	var yf_params Yf_params
 
-	(&yf_params).Set_Symbol("AAPL")
+	(&yf_params).Set_Symbol("SPY")
 	(&yf_params).Set_S0_Market_Price()
-	(&yf_params).Set_K_max(180)
-	(&yf_params).Set_K_min(20)
+	(&yf_params).Set_K_max(104)
+	(&yf_params).Set_K_min(96)
 	(&yf_params).Set_Max_Exp_date("2023-04-30")
-	(&yf_params).Set_Min_moneyness(-0.1)
-	(&yf_params).Set_Max_moneyness(-0.01)
-	(&yf_params).Set_Min_maturity(10)
-	(&yf_params).Set_Max_price(0.0024 * yf_params.S0)
+	(&yf_params).Set_Min_moneyness(-0.045)  // -0.005
+	(&yf_params).Set_Max_moneyness(-0.00001)   //  0.005
+	(&yf_params).Set_Min_maturity(1)         // 7
+	(&yf_params).Set_Max_price(1*0.0024 * yf_params.S0) //2
 	(&yf_params).Set_Put_moneyness_factor(1.5)
 	(&yf_params).Set_Type("C", true)
 

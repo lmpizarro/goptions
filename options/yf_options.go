@@ -165,28 +165,41 @@ func get_header() {
 	fmt.Printf(formatH, "tipo", "S0", "K", "Price", "Matur", "IV", "Mnn", "delta", "gamma")
 }
 
-func money_ness(yf_params *Yf_params, str *finance.Straddle) (float64, bool,
-	float64, bool) {
+func money_ness(yf_params *Yf_params, str *finance.Straddle) (float64,
+	float64) {
 	mnnC := (yf_params.S0 - str.Call.Strike) / str.Call.Strike
 	mnnP := (str.Put.Strike - yf_params.S0) / str.Put.Strike
-	mnnPBool := yf_params.S0 < str.Put.Strike
-	mnnCBool := yf_params.S0 > str.Put.Strike
-
-	return mnnC, mnnCBool, mnnP, mnnPBool
+	return mnnC, mnnP
 }
 
-func call_put_filter_01(yf_params *Yf_params, mnnC, last_price float64, ttm_days int64) bool {
+func call_put_filter_01(yf_params *Yf_params, mnnC float64, straddle *finance.Straddle, ttm_days int64) bool {
 	var factor float64
+	var last_price float64
+
 	if yf_params.Type == "C" {
 		factor = 1.0
+		last_price = straddle.Call.LastPrice
 	} else {
 		factor = yf_params.Put_moneyness_factor
+		last_price = straddle.Put.LastPrice
 	}
 	return mnnC < yf_params.Max_moneyness &&
 		mnnC > factor*yf_params.Min_moneyness &&
 		last_price < yf_params.Max_price &&
 		ttm_days > yf_params.Min_maturity_in_days
 }
+
+
+func call_put_filter_02(yf_params *Yf_params, mnnC float64, straddle *finance.Straddle, ttm_days int64) bool {
+
+	relation_01 := mnnC > yf_params.Min_moneyness
+	relation_02 := mnnC < yf_params.Max_moneyness
+	relation_03 := ttm_days >= yf_params.Min_maturity_in_days
+
+	return  relation_01 && relation_02 && relation_03
+
+}
+
 
 func Yf_Options(yf_params *Yf_params) {
 	exp_dates := expiration_dates(yf_params.Symbol)
@@ -197,25 +210,24 @@ func Yf_Options(yf_params *Yf_params) {
 		yf_params.Exp_date = exp_date[0]
 		straddles := Fetch_Options(yf_params)
 		for _, straddle := range straddles {
-			mnnC, mnnCBool, mnnP, mnnPBool := money_ness(yf_params, straddle)
+			mnnC, mnnP:= money_ness(yf_params, straddle)
 			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
-			if !mnnCBool {
-				if call_put_filter_01(yf_params, mnnC, straddle.Call.LastPrice, ttm_days) {
-					par_calc := OptionsParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
-						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility,
-						Q: 0.02}
-					fmt.Println(get_output(&par_calc, straddle, mnnC))
-				}
+
+			(yf_params).Set_Type("C", false)
+			if call_put_filter_01(yf_params, mnnC, straddle, ttm_days) {
+				par_calc := OptionsParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
+					T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility,
+					Q: 0.02}
+				fmt.Println(get_output(&par_calc, straddle, mnnC))
 			}
 			(yf_params).Set_Type("P", false)
-			if !mnnPBool {
-				if call_put_filter_01(yf_params, mnnP, straddle.Put.LastPrice, ttm_days) {
-					par_calc := OptionsParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
-						T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility,
-						Q: 0.02}
-					fmt.Println(get_output(&par_calc, straddle, mnnP))
-				}
+			if call_put_filter_01(yf_params, mnnP, straddle, ttm_days) {
+				par_calc := OptionsParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
+					T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility,
+					Q: 0.02}
+				fmt.Println(get_output(&par_calc, straddle, mnnP))
 			}
+
 		}
 	}
 }
