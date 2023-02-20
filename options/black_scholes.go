@@ -1,7 +1,6 @@
 package libs
 
 import (
-	"errors"
 	"math"
 
 	"gonum.org/v1/gonum/stat/distuv"
