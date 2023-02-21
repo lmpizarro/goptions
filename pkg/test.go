@@ -102,8 +102,8 @@ func Test_YF() {
 	(&yf_params).Set_K_max(104)
 	(&yf_params).Set_K_min(96)
 	(&yf_params).Set_Max_Exp_date("2023-04-30")
-	(&yf_params).Set_Min_moneyness(-0.005)  // -0.005     -0.045
-	(&yf_params).Set_Max_moneyness(0.005)   //  0.005  -0.000001
+	(&yf_params).Set_Min_moneyness(-0.025)  // -0.005     -0.045
+	(&yf_params).Set_Max_moneyness(0.025)   //  0.005  -0.000001
 	(&yf_params).Set_Min_maturity(7)         // 7          1
 	(&yf_params).Set_Max_price(2*0.0024 * yf_params.S0) //2  1
 	(&yf_params).Set_Put_moneyness_factor(1.5)
@@ -112,8 +112,8 @@ func Test_YF() {
 	calls, puts := Yf_Options(&yf_params)
 	fmt.Println(yf_params)
 
-	Make_regression(calls, true)
-	Make_regression(puts, true)
+	Make_regression(calls, false, "calls")
+	Make_regression(puts, false, "puts")
 
 }
 

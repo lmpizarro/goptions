@@ -239,10 +239,11 @@ func Yf_Options(yf_params *Yf_params) (c [][9]float64, p [][9]float64){
 	return calls, puts
 }
 
-func Make_regression(points [][9]float64, price bool){
+func Make_regression(points [][9]float64, price bool, description string){
 	// See https://github.com/sajari/regression
 	// "K ", e[2], "T (days) ", e[4],  "Price ", e[3], "IV ", e[5]
 	var observed float64
+	var counter int
 
 	r := new(regression.Regression)
 	if price {
@@ -254,17 +255,19 @@ func Make_regression(points [][9]float64, price bool){
 	r.SetVar(1, "T")
 	r.SetVar(2, "TT")
 	r.SetVar(3, "KK")
-	for _, point := range points{
+	r.SetVar(4, "KT")
+	for i, point := range points{
 		if price {
 			observed = point[3]
 		} else {
 			observed = point[5]
 		}
-		r.Train(regression.DataPoint(observed, []float64{point[2], point[4], point[4]*point[4], point[2]*point[2]}) )
+		r.Train(regression.DataPoint(observed, []float64{point[2], point[4], point[4]*point[4], point[2]*point[2], point[2]*point[4]}) )
+		counter = i
 	}
 	r.Run()
 
-	fmt.Printf("Regression formula:\n%v\n", r.Formula)
-	// fmt.Printf("Regression:\n%s\n", r)
+	fmt.Printf("# %v for %v %v \n", counter, description, r.Formula)
+	fmt.Printf("R2: %.2e Var Pred %.2e Var obs %.2e \n", r.R2, r.VariancePredicted, r.Varianceobserved)
 
 }
