@@ -240,6 +240,7 @@ func Yf_Options(yf_params *Yf_params) (c [][9]float64, p [][9]float64){
 }
 
 func Make_regression(points [][9]float64, price bool){
+	// See https://github.com/sajari/regression
 	// "K ", e[2], "T (days) ", e[4],  "Price ", e[3], "IV ", e[5]
 	var observed float64
 
