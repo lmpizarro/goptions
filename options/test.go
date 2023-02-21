@@ -107,8 +107,12 @@ func Test_YF() {
 	(&yf_params).Set_Put_moneyness_factor(1.5)
 	(&yf_params).Set_Type("C", true)
 
-	Yf_Options(&yf_params)
+	_, pt := Yf_Options(&yf_params)
 	fmt.Println(yf_params)
+
+	for _, e := range pt{
+		fmt.Println(e[2], e[4], e[3], e[5])
+	}
 
 }
 

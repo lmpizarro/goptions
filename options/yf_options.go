@@ -201,7 +201,7 @@ func call_put_filter_02(yf_params *Yf_params, mnnC float64, straddle *finance.St
 }
 
 
-func Yf_Options(yf_params *Yf_params) ([][9]float64, [][9]float64){
+func Yf_Options(yf_params *Yf_params) (c [][9]float64, p [][9]float64){
 	exp_dates := expiration_dates(yf_params.Symbol)
 	exp_dates = limit_exp_dates(exp_dates, yf_params.Max_exp_date)
 
