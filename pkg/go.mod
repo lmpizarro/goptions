@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/sajari/regression v1.0.1
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
 	golang.org/x/exp v0.0.0-20191002040644-a1355ae1e2c3 // indirect

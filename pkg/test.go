@@ -2,6 +2,8 @@ package libs
 
 import (
 	"fmt"
+	"github.com/sajari/regression"
+
 )
 
 func Test() {
@@ -92,6 +94,23 @@ func TestNewton() (int, float64) {
 	return s, sigma
 }
 
+func make_regression(points [][9]float64){
+	// "K ", e[2], "T (days) ", e[4],  "Price ", e[3], "IV ", e[5]
+	r := new(regression.Regression)
+	r.SetObserved("Price")
+	r.SetVar(0, "K")
+	r.SetVar(1, "T")
+	r.SetVar(2, "TT")
+	r.SetVar(3, "KK")
+	for _, point := range points{
+		r.Train(regression.DataPoint(point[3], []float64{point[2], point[4], point[4]*point[4], point[2]*point[2]}) )
+	}
+	r.Run()
+
+	fmt.Printf("Regression formula:\n%v\n", r.Formula)
+	// fmt.Printf("Regression:\n%s\n", r)
+
+}
 func Test_YF() {
 	var yf_params Yf_params
 
@@ -107,12 +126,11 @@ func Test_YF() {
 	(&yf_params).Set_Put_moneyness_factor(1.5)
 	(&yf_params).Set_Type("C", true)
 
-	_, pt := Yf_Options(&yf_params)
+	calls, puts := Yf_Options(&yf_params)
 	fmt.Println(yf_params)
 
-	for _, e := range pt{
-		fmt.Println(e[2], e[4], e[3], e[5])
-	}
+	make_regression(calls)
+	make_regression(puts)
 
 }
 
