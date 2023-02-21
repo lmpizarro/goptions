@@ -5,6 +5,7 @@ import (
 
 	"github.com/piquette/finance-go"
 	"github.com/piquette/finance-go/quote"
+	"github.com/sajari/regression"
 )
 
 type Yf_params struct {
@@ -238,3 +239,31 @@ func Yf_Options(yf_params *Yf_params) (c [][9]float64, p [][9]float64){
 	return calls, puts
 }
 
+func Make_regression(points [][9]float64, price bool){
+	// "K ", e[2], "T (days) ", e[4],  "Price ", e[3], "IV ", e[5]
+	var observed float64
+
+	r := new(regression.Regression)
+	if price {
+		r.SetObserved("Price")
+	} else {
+		r.SetObserved("IV")
+	}
+	r.SetVar(0, "K")
+	r.SetVar(1, "T")
+	r.SetVar(2, "TT")
+	r.SetVar(3, "KK")
+	for _, point := range points{
+		if price {
+			observed = point[3]
+		} else {
+			observed = point[5]
+		}
+		r.Train(regression.DataPoint(observed, []float64{point[2], point[4], point[4]*point[4], point[2]*point[2]}) )
+	}
+	r.Run()
+
+	fmt.Printf("Regression formula:\n%v\n", r.Formula)
+	// fmt.Printf("Regression:\n%s\n", r)
+
+}
