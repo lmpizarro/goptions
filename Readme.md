@@ -57,9 +57,19 @@ for puts Predicted = -8278.4412 + K*40.5141 + T*0.2290 + TT*-0.0012 + KK*-0.0495
 R2: 0.9190303081313422 Var Pred 6.699797170520277 Var obs 7.29007205882353
 
 volatility
- 
+
 
 # 160 for calls Predicted = 8.3918 + K*-0.0361 + T*-0.0182 + TT*-0.0000 + KK*0.0000 + KT*0.0000
 R2: 0.9680544017731629 Var Pred 0.0003704772798844008 Var obs 0.0003827029547159809
 # 160 for puts Predicted = -11.8856 + K*0.0645 + T*-0.0244 + TT*-0.0000 + KK*-0.0001 + KT*0.0001
 R2: 0.9097037009905432 Var Pred 0.0006050517309466163 Var obs 0.0006651085735803839
+
+# 159 for calls Predicted = 8.5276 + K*-0.0372 + T*-0.0152 + TT*-0.0000 + KK*0.0000 + KT*0.0000
+R2: 9.36e-01 Var Pred 3.37e-04 Var obs 3.60e-04
+# 159 for puts Predicted = -4.6745 + K*0.0281 + T*-0.0177 + TT*-0.0000 + KK*-0.0000 + KT*0.0001
+R2: 8.75e-01 Var Pred 4.53e-04 Var obs 5.18e-04
+
+# 160 for calls Predicted = 4.4469 + K*-0.0179 + T*-0.0094 + TT*-0.0000 + KK*0.0000 + KT*0.0000
+R2: 9.42e-01 Var Pred 2.43e-04 Var obs 2.58e-04
+# 160 for puts Predicted = -0.8526 + K*0.0078 + T*-0.0077 + TT*-0.0000 + KK*-0.0000 + KT*0.0000
+R2: 9.40e-01 Var Pred 2.43e-04 Var obs 2.59e-04
