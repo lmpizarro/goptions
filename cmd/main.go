@@ -5,8 +5,8 @@ import (
 	"lmpizarro/options/libs"
 )
 
-
 func main() {
+
 
 	// fmt.Println(libs.TestNewton())
 	// libs.Parallel_Calc_IV("SPY")
@@ -14,10 +14,10 @@ func main() {
 	panic("main")
 
 	fmt.Println("Tests")
-	params := libs.OptionsParameters{S: 100.0, K: 100.0,
+	params := libs.OptionParameters{S: 100.0, K: 100.0,
 		Tipo: "P", T: 1, Sigma: .4, Q: 0.01, R: 0.04}
-	fmt.Println(libs.Delta(&params))
-	fmt.Println(libs.Gamma(&params))
+	fmt.Println(params.Delta())
+	fmt.Println(params.Gamma())
 
 	deltaBin := libs.DeltaBin(&params, 150)
 	fmt.Println(deltaBin)

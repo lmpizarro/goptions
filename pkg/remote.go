@@ -16,7 +16,7 @@ func process(exp_dates [][]string, symbol string,
 	limits *Limits, wg *sync.WaitGroup) {
 
 	time1 := time.Now().Unix()
-	params := OptionsParameters{R: 0.04, Q: 0.01, Tipo: "C"}
+	params := OptionParameters{R: 0.04, Q: 0.01, Tipo: "C"}
 	var count int
 	for _, exp_date := range exp_dates {
 		if limits.Exp_date > exp_date[0] {

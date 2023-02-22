@@ -6,12 +6,37 @@ import (
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
-func d1(p *OptionsParameters) float64 {
+type Options interface {
+	Delta() float64
+	Gamma() float64
+	Theta() float64
+	Rho() float64
+	Vega() float64
+	d1() float64
+	d2() float64
+	Bs() float64
+}
+
+// OptionParameters
+//
+//	S: underlying Price
+//	K: Strike
+//	T: time to maturity
+//	R: risk free rate
+//	Sigma: volatility
+//	Q: dividend yield
+//	Tipo: "C" for call "P" for put
+type OptionParameters struct {
+	Tipo                 string
+	S, K, T, R, Sigma, Q float64
+}
+
+func (p *OptionParameters) d1() float64 {
 	return (math.Log(p.S/p.K) + (p.R-p.Q+0.5*p.Sigma*p.Sigma)*p.T) / p.Sigma / math.Sqrt(p.T)
 }
 
-func d2(p *OptionsParameters) float64 {
-	return d1(p) - p.Sigma*math.Sqrt(p.T)
+func (p *OptionParameters) d2() float64 {
+	return p.d1() - p.Sigma*math.Sqrt(p.T)
 }
 
 func np(x float64) float64 {
@@ -22,7 +47,7 @@ func np(x float64) float64 {
 //
 //	In: *Parameters {S, K, R, T, Sigma, Q}
 //	Out: price float64
-func Bs(p *OptionsParameters) float64 {
+func (p *OptionParameters) Bs() float64 {
 
 	/*
 		Def
@@ -46,8 +71,8 @@ func Bs(p *OptionsParameters) float64 {
 
 	var price float64
 
-	d1 := d1(p)
-	d2 := d2(p)
+	d1 := p.d1()
+	d2 := p.d2()
 
 	if p.Tipo == "C" {
 		price = math.Exp(-p.Q*p.T)*p.S*dist.CDF(d1) - p.K*math.Exp(-p.R*p.T)*dist.CDF(d2)
@@ -61,7 +86,8 @@ func Bs(p *OptionsParameters) float64 {
 //
 //	In: *Parameters {S, K, R, T, Sigma, Q}
 //	Out: delta float64
-func Delta(p *OptionsParameters) float64 {
+func (p *OptionParameters) Delta() float64 {
+
 	// Create a normal distribution
 	dist := distuv.Normal{
 		Mu:    0,
@@ -70,7 +96,7 @@ func Delta(p *OptionsParameters) float64 {
 
 	var delta float64
 
-	d1 := d1(p)
+	d1 := p.d1()
 
 	if p.Tipo == "C" {
 		delta = math.Exp(-p.Q*p.T) * dist.CDF(d1)
@@ -86,9 +112,9 @@ func Delta(p *OptionsParameters) float64 {
 //
 //	In: *Parameters {S, K, R, T, Sigma, Q}
 //	Out: gamma float64
-func Gamma(p *OptionsParameters) float64 {
+func (p *OptionParameters) Gamma() float64 {
 
-	d1 := d1(p)
+	d1 := p.d1()
 	return math.Exp(-p.Q*p.T) * np(d1) / (p.S * p.Sigma * math.Sqrt(p.T))
 }
 
@@ -97,7 +123,7 @@ func Gamma(p *OptionsParameters) float64 {
 //	In: *Parameters {S, K, R, T, Sigma, Q}
 //		calendar bool
 //	Out: theta float64
-func Theta(p *OptionsParameters, calendar bool) float64 {
+func (p *OptionParameters) Theta( calendar bool) float64 {
 
 	var theta float64
 	var NDY float64
@@ -113,10 +139,10 @@ func Theta(p *OptionsParameters, calendar bool) float64 {
 		Sigma: 1,
 	}
 
-	d1 := d1(p)
-	d2 := d2(p)
+	d1 := p.d1()
+	d2 := p.d2()
 
-	gamma := Gamma(p)
+	gamma := p.Gamma()
 	temp := gamma * math.Pow(p.S*p.Sigma, 2) / 2
 
 	if p.Tipo == "C" {
@@ -131,13 +157,13 @@ func Theta(p *OptionsParameters, calendar bool) float64 {
 //
 //	In: *Parameters {S, K, R, T, Sigma, Q}
 //	Out: rho float64
-func Rho(p *OptionsParameters) float64 {
+func (p *OptionParameters) Rho() float64 {
 	dist := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
 	}
 
-	d2 := d2(p)
+	d2 := p.d2()
 
 	var rho float64
 
@@ -154,31 +180,17 @@ func Rho(p *OptionsParameters) float64 {
 //		It is the same for calls and puts.
 //			In: *Parameters {S, K, R, T, Sigma, Q}
 //			Out: vega float64
-func Vega(p *OptionsParameters) float64 {
-	d1 := d1(p)
+func (p *OptionParameters) Vega() float64 {
+	d1 := p.d1()
 	return p.S * math.Exp(-p.Q*p.T) * math.Sqrt(p.T) * np(d1)
 
 }
 
 
-// OptionsParameters
-//
-//	S: underlying Price
-//	K: Strike
-//	T: time to maturity
-//	R: risk free rate
-//	Sigma: volatility
-//	Q: dividend yield
-//	Tipo: "C" for call "P" for put
-type OptionsParameters struct {
-	Tipo                 string
-	S, K, T, R, Sigma, Q float64
-}
-
-func (p *OptionsParameters) Price(method string, steps int) float64 {
+func (p *OptionParameters) Price(method string, steps int) float64 {
 	if method == "BIN" {
 		return Bin(p, steps)
 	} else {
-		return Bs(p)
+		return p.Bs()
 	}
 }

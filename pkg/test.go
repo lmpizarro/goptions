@@ -2,20 +2,19 @@ package libs
 
 import (
 	"fmt"
-
 )
 
 func Test() {
-	params := OptionsParameters{S: 100.0, K: 100.0,
+	params := OptionParameters{S: 100.0, K: 100.0,
 		Tipo: "P", T: 1, Sigma: .4, Q: 0.01, R: 0.04}
 
-	PBs := Bs(&params)
-	deltaPBs := Delta(&params)
+	PBs := params.Bs()
+	deltaPBs := params.Delta()
 	fmt.Println("hi P", PBs, deltaPBs)
 
 	params.Tipo = "C"
-	CBs := Bs(&params)
-	deltaCBs := Delta(&params)
+	CBs := params.Bs()
+	deltaCBs := params.Delta()
 
 	fmt.Println("hi C ", CBs, deltaCBs)
 
@@ -27,9 +26,9 @@ func Test() {
 	P := Bin(&params, 150)
 	fmt.Println("hi P Bin", P)
 
-	gamma := Gamma(&params)
+	gamma := params.Gamma()
 	fmt.Println("gamma ", gamma)
-	vega := Vega(&params)
+	vega := params.Vega()
 	fmt.Println("vega ", vega)
 
 	params.Tipo = "P"
@@ -40,16 +39,16 @@ func Test() {
 	fmt.Println("IV Newton ", IV)
 
 	params.Tipo = "C"
-	thetaC := Theta(&params, true)
+	thetaC := params.Theta(true)
 	params.Tipo = "P"
-	thetaP := Theta(&params, true)
+	thetaP := params.Theta(true)
 
 	fmt.Println(thetaC, thetaP)
 
 	params.Tipo = "C"
-	rhoC := Rho(&params)
+	rhoC := params.Rho()
 	params.Tipo = "P"
-	rhoP := Rho(&params)
+	rhoP := params.Rho()
 
 	fmt.Println(rhoC, rhoP)
 
@@ -61,10 +60,10 @@ func Test() {
 	params.Q = 0.0
 	params.Tipo = "C"
 
-	gamma = Gamma(&params)
-	thetaC = Theta(&params, true)
-	deltaCBs = Delta(&params)
-	rhoC = Rho(&params)
+	gamma = params.Gamma()
+	thetaC = params.Theta(true)
+	deltaCBs = params.Delta()
+	rhoC = params.Rho()
 
 	fmt.Println("\t Options, Futures, Derivatives 9th ed, J.C. Hull")
 	fmt.Println("gamma Hull pag 415", gamma)
@@ -74,13 +73,11 @@ func Test() {
 
 }
 
-
 func TestNewton() (int, float64) {
 	t := 110.0 / 365.0
 
-	opt_params := OptionsParameters{Tipo: "C", S: 200, K: 180, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
-	c := Bs(&opt_params)
-
+	opt_params := OptionParameters{Tipo: "C", S: 200, K: 180, T: t, R: 0.045, Sigma: 0.6, Q: 0.015}
+	c := opt_params.Bs()
 
 	sigma0 := IV_Brenner_Subrahmanyam(&opt_params, c)
 	fmt.Println("sigma0 BS", sigma0)
@@ -93,7 +90,6 @@ func TestNewton() (int, float64) {
 	return s, sigma
 }
 
-
 func Test_YF() {
 	var yf_params Yf_params
 
@@ -102,10 +98,10 @@ func Test_YF() {
 	(&yf_params).Set_K_max(104)
 	(&yf_params).Set_K_min(96)
 	(&yf_params).Set_Max_Exp_date("2023-05-30")
-	(&yf_params).Set_Min_moneyness(-0.25)  // -0.005     -0.045
-	(&yf_params).Set_Max_moneyness(0.25)   //  0.005  -0.000001
-	(&yf_params).Set_Min_maturity(7)         // 7          1
-	(&yf_params).Set_Max_price(2*0.0024 * yf_params.S0) //2  1
+	(&yf_params).Set_Min_moneyness(-0.25)                 // -0.005     -0.045
+	(&yf_params).Set_Max_moneyness(0.25)                  //  0.005  -0.000001
+	(&yf_params).Set_Min_maturity(7)                      // 7          1
+	(&yf_params).Set_Max_price(2 * 0.0024 * yf_params.S0) //2  1
 	(&yf_params).Set_Put_moneyness_factor(1.5)
 	(&yf_params).Set_Type("C", true)
 
@@ -113,9 +109,6 @@ func Test_YF() {
 	fmt.Println(yf_params)
 
 	Make_regression(calls, "IV", "calls")
-	Make_regression(puts, "IV" , "puts")
+	Make_regression(puts, "IV", "puts")
 
 }
-
-
-

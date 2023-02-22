@@ -6,36 +6,35 @@ import (
 	"errors"
 )
 
-func IV_Brenner_Subrahmanyam(p *OptionsParameters, C float64) float64 {
+func IV_Brenner_Subrahmanyam(p *OptionParameters, C float64) float64 {
 
-	X := p.K * math.Exp(-p.R * p.T)
+	X := p.K * math.Exp(-p.R*p.T)
 	d := (p.S - X) / 2
 	return math.Sqrt(2*math.Pi/p.T) * (C - d) / p.S
 }
 
-func IV_Bharadia_Christofides_Salkin(p *OptionsParameters, C float64) float64 {
+func IV_Bharadia_Christofides_Salkin(p *OptionParameters, C float64) float64 {
 
-	X := p.K * math.Exp(-p.R * p.T)
+	X := p.K * math.Exp(-p.R*p.T)
 	d := (p.S - X) / 2
 	return math.Sqrt(2*math.Pi/p.T) * (C - d) / (p.S - d)
 }
 
-func IV_Corrado_Miller(p *OptionsParameters, C float64) (float64, error) {
-	X := p.K * math.Exp(-p.R * p.T)
+func IV_Corrado_Miller(p *OptionParameters, C float64) (float64, error) {
+	X := p.K * math.Exp(-p.R*p.T)
 	d := (p.S - X) / 2
-	l1 := d * (1 - 2 / math.Sqrt(math.Pi))
-	l2 := d * (1 + 2 / math.Sqrt(math.Pi))
+	l1 := d * (1 - 2/math.Sqrt(math.Pi))
+	l2 := d * (1 + 2/math.Sqrt(math.Pi))
 	if C > l2 || C < l1 {
 		return (math.Sqrt(2*math.Pi/p.T) / (p.S + X)) *
-		(C - d + math.Sqrt(math.Pow(C-d,2) - (d * d / math.Pi))), nil
+			(C - d + math.Sqrt(math.Pow(C-d, 2)-(d*d/math.Pi))), nil
 	} else {
 		return 0.0, errors.New("bad limit")
 	}
 }
 
-
 // Solves Black-Scholes-Merton Implied Volatility by Newton Rapshon method
-func IvBsNewton(p *OptionsParameters, sigma0, price, tol float64) (int, float64) {
+func IvBsNewton(p *OptionParameters, sigma0, price, tol float64) (int, float64) {
 	var (
 		price0 float64
 		vega0  float64
@@ -44,8 +43,8 @@ func IvBsNewton(p *OptionsParameters, sigma0, price, tol float64) (int, float64)
 	for {
 		i++
 		p.Sigma = sigma0
-		price0 = Bs(p)
-		vega0 = Vega(p)
+		price0 = p.Bs()
+		vega0 = p.Vega()
 		sigma0 = sigma0 - ((price0 - price) / vega0)
 		if math.Abs(price0-price) < tol {
 			break
@@ -56,7 +55,7 @@ func IvBsNewton(p *OptionsParameters, sigma0, price, tol float64) (int, float64)
 
 // Solves Black-Scholes-Merton Implied Volatility
 // by the secant method
-func IvBsSecant(p *OptionsParameters, price float64) (int, float64) {
+func IvBsSecant(p *OptionParameters, price float64) (int, float64) {
 	var x2 float64
 	var i int
 
@@ -69,12 +68,12 @@ func IvBsSecant(p *OptionsParameters, price float64) (int, float64) {
 	f0 := p.func_diff_bs(price)
 
 	for i = 0; i < steps; i++ {
-		x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+		x2 = x1 - f1*(x1-x0)/(f1-f0)
 
 		x0 = x1
 		x1 = x2
 
-		if	math.Abs(f0-f1) < 0.000001{
+		if math.Abs(f0-f1) < 0.000001 {
 			panic("convergence error")
 		}
 
@@ -88,8 +87,9 @@ func IvBsSecant(p *OptionsParameters, price float64) (int, float64) {
 	}
 	return i, x1
 }
+
 // Solves Black-Scholes-Merton Implied Volatility
-func IvBsBisection_A(p *OptionsParameters, price float64) (int, float64) {
+func IvBsBisection_A(p *OptionParameters, price float64) (int, float64) {
 	var diff float64
 	var i int
 
@@ -119,10 +119,10 @@ func IvBsBisection_A(p *OptionsParameters, price float64) (int, float64) {
 	return i, sigma
 }
 
-func samesign(a, b float64) bool{
+func samesign(a, b float64) bool {
 	return math.Signbit(a) == math.Signbit(b)
 }
 
-func (p *OptionsParameters)func_diff_bs(price float64) float64{
-	return Bs(p) - price
+func (p *OptionParameters) func_diff_bs(price float64) float64 {
+	return p.Bs() - price
 }
