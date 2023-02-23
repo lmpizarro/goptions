@@ -22,7 +22,7 @@ func main() {
 	symbol := libs.Symbol(future_ggal.Symbol)
 	spot := symbol.Price()
 	years_to_mat := libs.YearsToMat(future_ggal.Maturity)
-	fut, _ := rfx.Last_Price(future_ggal.Futu, token)
+	fut, _ := rfx.LastPrice(future_ggal.Futu, token)
 	iR, pCt := libs.Rates(fut, spot, years_to_mat)
 	fmt.Printf("PC GGAL %.2f Implied %.2f\n", 100*pCt, 100*iR)
 	libs.Test_YF()

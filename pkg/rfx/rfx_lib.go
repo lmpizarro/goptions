@@ -72,7 +72,7 @@ type RespAllInstruments struct {
 
 // https://mholt.github.io/json-to-go/
 
-func Unmarshal_All_Instruments(body []byte) ([]string, error) {
+func UnmarshalAllInstruments(body []byte) ([]string, error) {
 	var result RespAllInstruments
 	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
 		return nil, fmt.Errorf("can not unmarshal json")
@@ -95,7 +95,7 @@ func Get_All_Instruments(token string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error %v", err)
 	}
-	return Unmarshal_All_Instruments(response)
+	return UnmarshalAllInstruments(response)
 }
 
 type marketData struct {
@@ -137,7 +137,7 @@ type marketData struct {
 	Aggregated bool `json:"aggregated"`
 }
 
-func Get_Market_Data(contract, token string) (marketData, error) {
+func GetMarketData(contract, token string) (marketData, error) {
 
 	url := MarketDataUrl(contract, 2)
 	res, err := rfx_get_req(url, token)
@@ -154,8 +154,8 @@ func Get_Market_Data(contract, token string) (marketData, error) {
 	return unmarshaled_data, err
 }
 
-func Last_Price(ticker, token string) (float64, error) {
-	data, err := Get_Market_Data(ticker, token)
+func LastPrice(ticker, token string) (float64, error) {
+	data, err := GetMarketData(ticker, token)
 	if err != nil {
 		return 0, err
 	}
@@ -164,7 +164,7 @@ func Last_Price(ticker, token string) (float64, error) {
 }
 
 func LastClose(ticker, token string) (float64, error) {
-	data, err := Get_Market_Data(ticker, token)
+	data, err := GetMarketData(ticker, token)
 	if err != nil {
 		return 0, err
 	}

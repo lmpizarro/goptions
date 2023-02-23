@@ -12,7 +12,7 @@ XADD temperatures:us-ny:10007 * temp_f 87.2 pressure 29.69 humidity 46
 func Build_messages(ticker, token string) (map[string]string, error) {
 	m := make(map[string]string)
 
-	data, err := Get_Market_Data(ticker, token)
+	data, err := GetMarketData(ticker, token)
 	if err != nil {
 		return m, err
 	}
