@@ -14,17 +14,17 @@ func main() {
 	token := rfx.Token(user, password)
 
 	future_spy := libs.Future{Symbol: "^GSPC", Maturity: "2023-03-23", Futu: "ESH23.CME"}
-	future_ggal := libs.Future{Symbol: "GGAL.BA", Maturity: "2023-02-28", Futu: "GGAL/FEB23"}
+	future_ggal := libs.Future{Symbol: "GGAL.BA", Maturity: "2023-04-28", Futu: "GGAL/ABR23"}
 
-	implied_rate, absPct := libs.ImpliedRate(&future_spy)
-	fmt.Printf("PC SPY %.2f Implied %.2f\n", 100*absPct, 100*implied_rate)
+	implied_rate, absPct, fut, spot := libs.ImpliedRate(&future_spy)
+	fmt.Printf("PC SPY %.2f Implied %.2f F %.2f S %.2f \n", 100*absPct, 100*implied_rate, fut, spot)
 
 	symbol := libs.Symbol(future_ggal.Symbol)
-	spot := symbol.Price()
+	spot = symbol.Price()
 	years_to_mat := libs.YearsToMat(future_ggal.Maturity)
-	fut, _ := rfx.LastPrice(future_ggal.Futu, token)
+	fut, _ = rfx.LastPrice(future_ggal.Futu, token)
 	iR, pCt := libs.Rates(fut, spot, years_to_mat)
-	fmt.Printf("PC GGAL %.2f Implied %.2f\n", 100*pCt, 100*iR)
+	fmt.Printf("PC GGAL %.2f Implied %.2f F %.2f S %.2f\n", 100*pCt, 100*iR, fut, spot)
 	libs.Test_YF()
 	panic("main")
 

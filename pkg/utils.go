@@ -39,13 +39,14 @@ func YearsToMat(date string) float64 {
 	return float64(TtmInDays(t_seconds)) / 365.0
 }
 
-func ImpliedRate(future *Future) (float64, float64) {
+func ImpliedRate(future *Future) (float64, float64, float64, float64) {
 
 	spot := RegularMarketPrice(future.Symbol)
 	fut := RegularMarketPrice(future.Futu)
 
-	return Rates(fut, spot, YearsToMat(future.Maturity))
+	ir, abcPct := Rates(fut, spot, YearsToMat(future.Maturity))
 
+	return ir, abcPct, fut, spot
 }
 
 func CclAAPL() float64 {
