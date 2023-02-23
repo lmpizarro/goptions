@@ -93,18 +93,17 @@ func TestNewton() (int, float64) {
 func Test_YF() {
 	var yf_params YfParams
 
-	(&yf_params).SetSymbol("SPY")
-	(&yf_params).SetRegularMarketPrice()
-	(&yf_params).SetMaxExpDate("2023-05-30")
-	(&yf_params).SetMinMoneyness(-0.25)                 // -0.005     -0.045
-	(&yf_params).SetMaxMoneyness(0.25)                  //  0.005  -0.000001
-	(&yf_params).SetMinMaturity(7)                      // 7          1
-	(&yf_params).SetMaxPrice(2 * 0.0024 * yf_params.S0) //2  1
-	(&yf_params).SetPutMoneynessFactor(1.5)
-	(&yf_params).SetType("C", true)
+	(&yf_params).SetSymbol("SPY", false)
+	(&yf_params).SetRegularMarketPrice(false)
+	(&yf_params).SetMaxExpDate("2023-05-30", false)
+	(&yf_params).SetMinMoneyness(-0.25, false)                 // -0.005     -0.045
+	(&yf_params).SetMaxMoneyness(0.25, false)                  //  0.005  -0.000001
+	(&yf_params).SetMinMaturity(7, false)                      // 7          1
+	(&yf_params).SetMaxPrice(2 * 0.0024 * yf_params.S0, false) //2  1
+	(&yf_params).SetPutMoneynessFactor(1.5, false)
+	(&yf_params).SetType("C", false)
 
 	calls, puts := Yf_Options(&yf_params, false)
-	fmt.Println(yf_params)
 
 	// MakeRegression(calls, "IV", "calls")
 	// MakeRegression(puts, "IV", "puts")

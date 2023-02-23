@@ -38,9 +38,11 @@ type YfParams struct {
 	Type               string
 }
 
-func (p *YfParams) SetPutMoneynessFactor(ftr float64) {
+func (p *YfParams) SetPutMoneynessFactor(ftr float64, v bool) {
 	p.PutMoneynessFactor = ftr
-	fmt.Println(set_literal_float("Put moneyness factor: ", p.PutMoneynessFactor))
+	if v {
+		fmt.Println(set_literal_float("Put moneyness factor: ", p.PutMoneynessFactor))
+	}
 }
 
 func (p *YfParams) SetType(tpe string, v bool) {
@@ -50,19 +52,25 @@ func (p *YfParams) SetType(tpe string, v bool) {
 	}
 }
 
-func (p *YfParams) SetMinMoneyness(mnn float64) {
+func (p *YfParams) SetMinMoneyness(mnn float64, v bool) {
 	p.MinMoneyness = mnn
-	fmt.Println(set_literal_float("Min moneyness", float64(p.MinMoneyness)))
+	if v{
+		fmt.Println(set_literal_float("Min moneyness", float64(p.MinMoneyness)))
+	}
 }
 
-func (p *YfParams) SetMaxMoneyness(mnn float64) {
+func (p *YfParams) SetMaxMoneyness(mnn float64, v bool) {
 	p.MaxMoneyness = mnn
-	fmt.Println(set_literal_float("Max moneyness", float64(p.MaxMoneyness)))
+	if v{
+		fmt.Println(set_literal_float("Max moneyness", float64(p.MaxMoneyness)))
+	}
 }
 
-func (p *YfParams) SetMinMaturity(mat int64) {
+func (p *YfParams) SetMinMaturity(mat int64, v bool) {
 	p.MinMaturityInDays = mat
-	fmt.Println(set_literal_float("Min maturity", float64(p.MinMaturityInDays)))
+	if v {
+		fmt.Println(set_literal_float("Min maturity", float64(p.MinMaturityInDays)))
+	}
 }
 
 func set_literal_float(literal string, value float64) string {
@@ -73,24 +81,30 @@ func set_literal_string(literal string, value string) string {
 	return fmt.Sprintf("Set %v to % v", literal, value)
 }
 
-func (p *YfParams) SetMaxPrice(mp float64) {
+func (p *YfParams) SetMaxPrice(mp float64, v bool) {
 	p.MaxPrice = mp
-	fmt.Println(set_literal_float("Max price", p.MaxPrice))
+	if v {
+		fmt.Println(set_literal_float("Max price", p.MaxPrice))
+	}
 }
 
-func (params *YfParams) SetMaxExpDate(date string) {
+func (params *YfParams) SetMaxExpDate(date string, v bool) {
 	params.MaxExpDate = date
-	fmt.Println(set_literal_string("Max expiration date", params.MaxExpDate))
+	if v{
+		fmt.Println(set_literal_string("Max expiration date", params.MaxExpDate))
+	}
 }
 
 // Assign the underlying price to S0
-func (params *YfParams) SetRegularMarketPrice() {
+func (params *YfParams) SetRegularMarketPrice(v bool) {
 	q, err := quote.Get(params.Symbol)
 	if err != nil {
 		panic(err)
 	}
 	params.S0 = q.RegularMarketPrice
-	fmt.Println(set_literal_float("S0", params.S0))
+	if v{
+		fmt.Println(set_literal_float("S0", params.S0))
+	}
 }
 
 func (params *YfParams) SetS0(s0 float64) {
@@ -108,9 +122,12 @@ func (params *YfParams) SetKmax(pct float64) {
 	fmt.Println(set_literal_float("K max", params.Kmax))
 }
 
-func (params *YfParams) SetSymbol(symbol string) {
+func (params *YfParams) SetSymbol(symbol string, v bool) {
 	params.Symbol = symbol
-	fmt.Println(set_literal_string("Symbol", params.Symbol))
+	if v{
+		fmt.Println(set_literal_string("Symbol", params.Symbol))
+
+	}
 }
 
 func limit_exp_dates(exp_dates [][]string, limit string) [][]string {

@@ -26,17 +26,25 @@ type Future struct {
 	Futu     string
 }
 
-func ImpliedRate(future *Future) (float64, float64) {
-
-	_, t_seconds := ParserStringDate(future.Maturity)
-	years_to_mat := float64(TtmInDays(t_seconds)) / 365.0
-	spot := RegularMarketPrice(future.Symbol)
-	fut := RegularMarketPrice(future.Futu)
+func Rates(fut, spot, years_to_mat float64) (float64, float64) {
 	implied_rate := math.Pow(fut/spot, 1/years_to_mat) - 1
 
 	percent := (fut - spot) / spot
 
 	return implied_rate, percent
+}
+
+func YearsToMat(date string) float64 {
+	_, t_seconds := ParserStringDate(date)
+	return float64(TtmInDays(t_seconds)) / 365.0
+}
+
+func ImpliedRate(future *Future) (float64, float64) {
+
+	spot := RegularMarketPrice(future.Symbol)
+	fut := RegularMarketPrice(future.Futu)
+
+	return Rates(fut, spot, YearsToMat(future.Maturity))
 
 }
 
@@ -49,12 +57,22 @@ func CclAAPL() float64 {
 
 }
 
+type Prices interface {
+	Price()
+}
+
+type Symbol string
+
+func (s Symbol) Price() float64 {
+	return RegularMarketPrice(string(s))
+}
+
 func GGAL() float64 {
-	return RegularMarketPrice("GGAL")
+	return Symbol("GGAL").Price()
 }
 
 func GGALBA() float64 {
-	return RegularMarketPrice("GGAL.BA")
+	return Symbol("GGAL.BA").Price()
 }
 
 func CclGGAL() float64 {

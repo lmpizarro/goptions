@@ -3,20 +3,35 @@ package main
 import (
 	"fmt"
 	"lmpizarro/options/libs"
+	"lmpizarro/options/rfx"
 )
 
 func main() {
 
-	future := libs.Future{Symbol: "^GSPC", Maturity: "2023-03-23", Futu: "ESH23.CME"}
+	cred := rfx.ReadCredentials("./env.csv", false)
+	user := cred.User
+	password := cred.Password
+	token := rfx.Token(user, password)
 
-	implied_rate, absolute := libs.ImpliedRate(&future)
-	fmt.Printf("PC %.2e Implied %.2e\n", 100*absolute, 100*implied_rate)
-	fmt.Println(libs.Ccl())
+	future_spy := libs.Future{Symbol: "^GSPC", Maturity: "2023-03-23", Futu: "ESH23.CME"}
+	future_ggal := libs.Future{Symbol: "GGAL.BA", Maturity: "2023-02-28", Futu: "GGAL/FEB23"}
 
+	implied_rate, absPct := libs.ImpliedRate(&future_spy)
+	fmt.Printf("PC SPY %.2f Implied %.2f\n", 100*absPct, 100*implied_rate)
+
+	symbol := libs.Symbol(future_ggal.Symbol)
+	spot := symbol.Price()
+	years_to_mat := libs.YearsToMat(future_ggal.Maturity)
+	fut, _ := rfx.Last_Price(future_ggal.Futu, token)
+	iR, pCt := libs.Rates(fut, spot, years_to_mat)
+	fmt.Printf("PC GGAL %.2f Implied %.2f\n", 100*pCt, 100*iR)
+	libs.Test_YF()
 	panic("main")
+
+	fmt.Println(libs.Ccl())
+	fmt.Println(libs.GGALBA())
 	fmt.Println(libs.TestNewton())
 	//libs.Parallel_Calc_IV("SPY")
-	libs.Test_YF()
 
 	fmt.Println("Tests")
 	params := libs.OptionParameters{S: 100.0, K: 100.0,
