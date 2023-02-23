@@ -49,10 +49,18 @@ func CclAAPL() float64 {
 
 }
 
+func GGAL() float64 {
+	return RegularMarketPrice("GGAL")
+}
+
+func GGALBA() float64 {
+	return RegularMarketPrice("GGAL.BA")
+}
+
 func CclGGAL() float64 {
 
-	spot := RegularMarketPrice("GGAL")
-	fut := RegularMarketPrice("GGAL.BA")
+	spot := GGAL()
+	fut := GGALBA()
 
 	return 10 * fut / spot
 
