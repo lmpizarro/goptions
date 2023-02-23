@@ -108,7 +108,7 @@ func Test_YF() {
 
 	// MakeRegression(calls, "IV", "calls")
 	// MakeRegression(puts, "IV", "puts")
-	fmt.Println("IV calls ", MakeIVAverage(calls))
-	fmt.Println("IV puts ",  MakeIVAverage(puts))
+	fmt.Println("IV calls ", MeanIV(calls))
+	fmt.Println("IV puts ", MeanIV(puts))
 
 }

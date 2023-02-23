@@ -7,11 +7,16 @@ import (
 
 func main() {
 
+	future := libs.Future{Symbol: "^GSPC", Maturity: "2023-03-23", Futu: "ESH23.CME"}
 
+	implied_rate, absolute := libs.ImpliedRate(&future)
+	fmt.Printf("PC %.2e Implied %.2e\n", 100*absolute, 100*implied_rate)
+	fmt.Println(libs.Ccl())
+
+	panic("main")
 	fmt.Println(libs.TestNewton())
 	//libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
-	panic("main")
 
 	fmt.Println("Tests")
 	params := libs.OptionParameters{S: 100.0, K: 100.0,

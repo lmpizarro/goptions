@@ -126,9 +126,9 @@ func limit_exp_dates(exp_dates [][]string, limit string) [][]string {
 func FetchOptions(params *YfParams) []*finance.Straddle {
 	var filtered_straddles []*finance.Straddle
 
-	exp_date_time, _ := parse_string_date(params.ExpDate)
+	exp_date_time, _ := ParserStringDate(params.ExpDate)
 	straddles := get_straddles(exp_date_time, params.Symbol)
-	_, max_ttm_seconds := parse_string_date(params.MaxExpDate)
+	_, max_ttm_seconds := ParserStringDate(params.MaxExpDate)
 	for _, straddle := range straddles {
 		non_nil_condition := straddle.Call != nil && straddle.Put != nil
 
@@ -235,7 +235,7 @@ func Yf_Options(yf_params *YfParams, print bool) (c [][9]float64, p [][9]float64
 		straddles := FetchOptions(yf_params)
 		for _, straddle := range straddles {
 			mnnC, mnnP := moneyness(yf_params, straddle)
-			ttm_days := ttm_in_days(int64(straddle.Put.Expiration))
+			ttm_days := TtmInDays(int64(straddle.Put.Expiration))
 
 			(yf_params).SetType("C", false)
 			if call_put_filter_02(yf_params, mnnC, straddle, ttm_days) {
@@ -308,7 +308,7 @@ func MakeRegression(points [][9]float64, observer string, description string) {
 
 }
 
-func MakeIVAverage(points [][9]float64) float64{
+func MeanIV(points [][9]float64) float64 {
 	// See https://github.com/sajari/regression
 	// "K ", e[2], "T (days) ", e[4],  "Price ", e[3], "IV ", e[5]
 	var counter int
@@ -320,6 +320,14 @@ func MakeIVAverage(points [][9]float64) float64{
 		mean += point[5]
 	}
 
-	return mean/float64(counter)
+	return mean / float64(counter)
 
+}
+
+func RegularMarketPrice(symbol string) float64 {
+	q, err := quote.Get(symbol)
+	if err != nil {
+		panic(err)
+	}
+	return q.RegularMarketPrice
 }
