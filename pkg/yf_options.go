@@ -24,23 +24,23 @@ type YfOption interface {
 }
 
 type YfParams struct {
-	S0                   float64
-	K_min                float64
-	K_max                float64
-	Max_exp_date         string
-	Symbol               string
-	Exp_date             string
-	Min_moneyness        float64
-	Max_moneyness        float64
-	Min_maturity_in_days int64
-	Max_price            float64
-	Put_moneyness_factor float64
-	Type                 string
+	S0                 float64
+	Kmin               float64
+	Kmax               float64
+	MaxExpDate         string
+	Symbol             string
+	ExpDate            string
+	MinMoneyness       float64
+	MaxMoneyness       float64
+	MinMaturityInDays  int64
+	MaxPrice           float64
+	PutMoneynessFactor float64
+	Type               string
 }
 
 func (p *YfParams) SetPutMoneynessFactor(ftr float64) {
-	p.Put_moneyness_factor = ftr
-	fmt.Println(set_literal_float("Put moneyness factor: ", p.Put_moneyness_factor))
+	p.PutMoneynessFactor = ftr
+	fmt.Println(set_literal_float("Put moneyness factor: ", p.PutMoneynessFactor))
 }
 
 func (p *YfParams) SetType(tpe string, v bool) {
@@ -51,18 +51,18 @@ func (p *YfParams) SetType(tpe string, v bool) {
 }
 
 func (p *YfParams) SetMinMoneyness(mnn float64) {
-	p.Min_moneyness = mnn
-	fmt.Println(set_literal_float("Min moneyness", float64(p.Min_moneyness)))
+	p.MinMoneyness = mnn
+	fmt.Println(set_literal_float("Min moneyness", float64(p.MinMoneyness)))
 }
 
 func (p *YfParams) SetMaxMoneyness(mnn float64) {
-	p.Max_moneyness = mnn
-	fmt.Println(set_literal_float("Max moneyness", float64(p.Max_moneyness)))
+	p.MaxMoneyness = mnn
+	fmt.Println(set_literal_float("Max moneyness", float64(p.MaxMoneyness)))
 }
 
 func (p *YfParams) SetMinMaturity(mat int64) {
-	p.Min_maturity_in_days = mat
-	fmt.Println(set_literal_float("Min maturity", float64(p.Min_maturity_in_days)))
+	p.MinMaturityInDays = mat
+	fmt.Println(set_literal_float("Min maturity", float64(p.MinMaturityInDays)))
 }
 
 func set_literal_float(literal string, value float64) string {
@@ -74,15 +74,16 @@ func set_literal_string(literal string, value string) string {
 }
 
 func (p *YfParams) SetMaxPrice(mp float64) {
-	p.Max_price = mp
-	fmt.Println(set_literal_float("Max price", p.Max_price))
+	p.MaxPrice = mp
+	fmt.Println(set_literal_float("Max price", p.MaxPrice))
 }
 
 func (params *YfParams) SetMaxExpDate(date string) {
-	params.Max_exp_date = date
-	fmt.Println(set_literal_string("Max expiration date", params.Max_exp_date))
+	params.MaxExpDate = date
+	fmt.Println(set_literal_string("Max expiration date", params.MaxExpDate))
 }
 
+// Assign the underlying price to S0
 func (params *YfParams) SetRegularMarketPrice() {
 	q, err := quote.Get(params.Symbol)
 	if err != nil {
@@ -97,14 +98,14 @@ func (params *YfParams) SetS0(s0 float64) {
 }
 
 func (params *YfParams) SetKmin(pct float64) {
-	params.K_min = params.S0 * pct / 100
-	fmt.Println(set_literal_float("K min", params.K_min))
+	params.Kmin = params.S0 * pct / 100
+	fmt.Println(set_literal_float("K min", params.Kmin))
 }
 
 func (params *YfParams) SetKmax(pct float64) {
-	params.K_max = params.S0 * pct / 100
+	params.Kmax = params.S0 * pct / 100
 
-	fmt.Println(set_literal_float("K max", params.K_max))
+	fmt.Println(set_literal_float("K max", params.Kmax))
 }
 
 func (params *YfParams) SetSymbol(symbol string) {
@@ -125,9 +126,9 @@ func limit_exp_dates(exp_dates [][]string, limit string) [][]string {
 func FetchOptions(params *YfParams) []*finance.Straddle {
 	var filtered_straddles []*finance.Straddle
 
-	exp_date_time, _ := parse_string_date(params.Exp_date)
+	exp_date_time, _ := parse_string_date(params.ExpDate)
 	straddles := get_straddles(exp_date_time, params.Symbol)
-	_, max_ttm_seconds := parse_string_date(params.Max_exp_date)
+	_, max_ttm_seconds := parse_string_date(params.MaxExpDate)
 	for _, straddle := range straddles {
 		non_nil_condition := straddle.Call != nil && straddle.Put != nil
 
@@ -175,11 +176,13 @@ func getOutput(params *OptionParameters, straddle *finance.Straddle, money_ness 
 		Round_down(line[6], 4), Round_down(line[7], 4), Round_down(line[8], 4))
 }
 
-func getHeader() {
+// Print header of output
+func printHeader() {
 	formatH := "%6s %6s %6s %10s %10s %10s %10s %10s %10s\n"
 	fmt.Printf(formatH, "tipo", "S0", "K", "Price", "Matur", "IV", "Mnn", "delta", "gamma")
 }
 
+// Calculate the moneyness of a straddle
 func moneyness(yf_params *YfParams, str *finance.Straddle) (float64,
 	float64) {
 	mnnC := (yf_params.S0 - str.Call.Strike) / str.Call.Strike
@@ -187,7 +190,8 @@ func moneyness(yf_params *YfParams, str *finance.Straddle) (float64,
 	return mnnC, mnnP
 }
 
-func call_put_filter_01(yf_params *YfParams, mnnC float64, straddle *finance.Straddle, ttm_days int64) bool {
+func call_put_filter_01(yf_params *YfParams, mnnC float64,
+	straddle *finance.Straddle, ttm_days int64) bool {
 	var factor float64
 	var last_price float64
 
@@ -195,35 +199,39 @@ func call_put_filter_01(yf_params *YfParams, mnnC float64, straddle *finance.Str
 		factor = 1.0
 		last_price = straddle.Call.LastPrice
 	} else {
-		factor = yf_params.Put_moneyness_factor
+		factor = yf_params.PutMoneynessFactor
 		last_price = straddle.Put.LastPrice
 	}
-	return mnnC < yf_params.Max_moneyness &&
-		mnnC > factor*yf_params.Min_moneyness &&
-		last_price < yf_params.Max_price &&
-		ttm_days > yf_params.Min_maturity_in_days
+	return mnnC < yf_params.MaxMoneyness &&
+		mnnC > factor*yf_params.MinMoneyness &&
+		last_price < yf_params.MaxPrice &&
+		ttm_days > yf_params.MinMaturityInDays
 }
 
-func call_put_filter_02(yf_params *YfParams, mnnC float64, straddle *finance.Straddle, ttm_days int64) bool {
+func call_put_filter_02(yf_params *YfParams, mnnC float64,
+	straddle *finance.Straddle,
+	ttm_days int64) bool {
 
-	relation_01 := mnnC > yf_params.Min_moneyness
-	relation_02 := mnnC < yf_params.Max_moneyness
-	relation_03 := ttm_days >= yf_params.Min_maturity_in_days
+	relation_01 := mnnC > yf_params.MinMoneyness
+	relation_02 := mnnC < yf_params.MaxMoneyness
+	relation_03 := ttm_days >= yf_params.MinMaturityInDays
 
 	return relation_01 && relation_02 && relation_03
 
 }
 
-func Yf_Options(yf_params *YfParams) (c [][9]float64, p [][9]float64) {
+func Yf_Options(yf_params *YfParams, print bool) (c [][9]float64, p [][9]float64) {
 	exp_dates := expiration_dates(yf_params.Symbol)
-	exp_dates = limit_exp_dates(exp_dates, yf_params.Max_exp_date)
+	exp_dates = limit_exp_dates(exp_dates, yf_params.MaxExpDate)
 
 	var puts [][9]float64
 	var calls [][9]float64
 
-	getHeader()
+	if print {
+		printHeader()
+	}
 	for _, exp_date := range exp_dates {
-		yf_params.Exp_date = exp_date[0]
+		yf_params.ExpDate = exp_date[0]
 		straddles := FetchOptions(yf_params)
 		for _, straddle := range straddles {
 			mnnC, mnnP := moneyness(yf_params, straddle)
@@ -234,7 +242,9 @@ func Yf_Options(yf_params *YfParams) (c [][9]float64, p [][9]float64) {
 				par_calc := OptionParameters{Tipo: "C", S: yf_params.S0, K: straddle.Call.Strike,
 					T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Call.ImpliedVolatility,
 					Q: 0.02}
-				fmt.Println(getOutput(&par_calc, straddle, mnnC))
+				if print {
+					fmt.Println(getOutput(&par_calc, straddle, mnnC))
+				}
 				calls = append(calls, getLineOut(&par_calc, straddle, mnnC))
 			}
 			(yf_params).SetType("P", false)
@@ -242,7 +252,9 @@ func Yf_Options(yf_params *YfParams) (c [][9]float64, p [][9]float64) {
 				par_calc := OptionParameters{Tipo: "P", S: yf_params.S0, K: straddle.Put.Strike,
 					T: float64(ttm_days) / 365.0, R: 0.045, Sigma: straddle.Put.ImpliedVolatility,
 					Q: 0.02}
-				fmt.Println(getOutput(&par_calc, straddle, mnnC))
+				if print {
+					fmt.Println(getOutput(&par_calc, straddle, mnnC))
+				}
 				puts = append(puts, getLineOut(&par_calc, straddle, mnnP))
 			}
 
@@ -251,7 +263,7 @@ func Yf_Options(yf_params *YfParams) (c [][9]float64, p [][9]float64) {
 	return calls, puts
 }
 
-func Make_regression(points [][9]float64, observer string, description string) {
+func MakeRegression(points [][9]float64, observer string, description string) {
 	// See https://github.com/sajari/regression
 	// "K ", e[2], "T (days) ", e[4],  "Price ", e[3], "IV ", e[5]
 	var observed float64
@@ -293,5 +305,23 @@ func Make_regression(points [][9]float64, observer string, description string) {
 
 	fmt.Printf("# %v mean %v for %v %v \n", counter, mean_observed/float64(counter), description, r.Formula)
 	fmt.Printf("R2: %.2e Var Pred %.2e Var obs %.2e \n", r.R2, r.VariancePredicted, r.Varianceobserved)
+
+}
+
+func MakeIVAverage(points [][9]float64) float64{
+	// See https://github.com/sajari/regression
+	// "K ", e[2], "T (days) ", e[4],  "Price ", e[3], "IV ", e[5]
+	var observed float64
+	var counter int
+	var mean_observed float64
+
+	mean_observed = 0
+	for i, point := range points {
+		observed = point[5]
+		counter = i
+		mean_observed += observed
+	}
+
+	return mean_observed/float64(counter)
 
 }

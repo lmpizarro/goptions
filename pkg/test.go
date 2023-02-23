@@ -95,8 +95,6 @@ func Test_YF() {
 
 	(&yf_params).SetSymbol("SPY")
 	(&yf_params).SetRegularMarketPrice()
-	(&yf_params).SetKmax(104)
-	(&yf_params).SetKmin(96)
 	(&yf_params).SetMaxExpDate("2023-05-30")
 	(&yf_params).SetMinMoneyness(-0.25)                 // -0.005     -0.045
 	(&yf_params).SetMaxMoneyness(0.25)                  //  0.005  -0.000001
@@ -105,10 +103,12 @@ func Test_YF() {
 	(&yf_params).SetPutMoneynessFactor(1.5)
 	(&yf_params).SetType("C", true)
 
-	calls, puts := Yf_Options(&yf_params)
+	calls, puts := Yf_Options(&yf_params, false)
 	fmt.Println(yf_params)
 
-	Make_regression(calls, "IV", "calls")
-	Make_regression(puts, "IV", "puts")
+	// MakeRegression(calls, "IV", "calls")
+	// MakeRegression(puts, "IV", "puts")
+	fmt.Println("IV calls ", MakeIVAverage(calls))
+	fmt.Println("IV puts ",  MakeIVAverage(puts))
 
 }
