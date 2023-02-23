@@ -8,8 +8,8 @@ import (
 func main() {
 
 
-	// fmt.Println(libs.TestNewton())
-	// libs.Parallel_Calc_IV("SPY")
+	fmt.Println(libs.TestNewton())
+	//libs.Parallel_Calc_IV("SPY")
 	libs.Test_YF()
 	panic("main")
 

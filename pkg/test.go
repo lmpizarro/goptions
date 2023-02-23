@@ -91,19 +91,19 @@ func TestNewton() (int, float64) {
 }
 
 func Test_YF() {
-	var yf_params Yf_params
+	var yf_params YfParams
 
-	(&yf_params).Set_Symbol("SPY")
-	(&yf_params).Set_S0_Market_Price()
-	(&yf_params).Set_K_max(104)
-	(&yf_params).Set_K_min(96)
-	(&yf_params).Set_Max_Exp_date("2023-05-30")
-	(&yf_params).Set_Min_moneyness(-0.25)                 // -0.005     -0.045
-	(&yf_params).Set_Max_moneyness(0.25)                  //  0.005  -0.000001
-	(&yf_params).Set_Min_maturity(7)                      // 7          1
-	(&yf_params).Set_Max_price(2 * 0.0024 * yf_params.S0) //2  1
-	(&yf_params).Set_Put_moneyness_factor(1.5)
-	(&yf_params).Set_Type("C", true)
+	(&yf_params).SetSymbol("SPY")
+	(&yf_params).SetRegularMarketPrice()
+	(&yf_params).SetKmax(104)
+	(&yf_params).SetKmin(96)
+	(&yf_params).SetMaxExpDate("2023-05-30")
+	(&yf_params).SetMinMoneyness(-0.25)                 // -0.005     -0.045
+	(&yf_params).SetMaxMoneyness(0.25)                  //  0.005  -0.000001
+	(&yf_params).SetMinMaturity(7)                      // 7          1
+	(&yf_params).SetMaxPrice(2 * 0.0024 * yf_params.S0) //2  1
+	(&yf_params).SetPutMoneynessFactor(1.5)
+	(&yf_params).SetType("C", true)
 
 	calls, puts := Yf_Options(&yf_params)
 	fmt.Println(yf_params)
