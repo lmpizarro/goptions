@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
-	"strings"
 )
 
 const Url = "https://api.remarkets.primary.com.ar/"
@@ -172,46 +170,4 @@ func LastClose(ticker, token string) (float64, error) {
 	}
 
 	return data.MarketData.Cl.Price, err
-}
-
-
-func map_options(key string) []string {
-	x := make(map[string][]string)
-
-	x["SOJ.ROS"] = append(x["SOJ.ROS"], `^SOJ.ROS.*P$`)
-	x["SOJ.ROS"] = append(x["SOJ.ROS"], `^SOJ.ROS.*C$`)
-
-	x["MAI.ROS"] = append(x["MAI.ROS"], `^MAI.ROS.*P$`)
-	x["MAI.ROS"] = append(x["MAI.ROS"], `^MAI.ROS.*C$`)
-	return x[key]
-}
-
-func parse_option_contract(e string) {
-	split1 := strings.Split(e, "/")
-	split2 := strings.Split(split1[1], " ")
-	especie := split1[0]
-	fecha := split2[0]
-	month := fecha[0:3]
-	year := "20" + fecha[3:5]
-	K := split2[1]
-	tipo := split2[2]
-	fmt.Println(e, especie, month, year, K, tipo)
-}
-
-func All_options_contract(especie string, all_instruments []string) []string {
-	filterC := map_options(especie)[1]
-	filterP := map_options(especie)[0]
-	re1, _ := regexp.Compile(filterC)
-	re2, _ := regexp.Compile(filterP)
-	var contracts []string
-
-	for _, e := range all_instruments {
-
-		// fmt.Println(e)
-		matched := re1.MatchString(e) || re2.MatchString(e)
-		if matched {
-			contracts = append(contracts, e)
-		}
-	}
-	return contracts
 }
