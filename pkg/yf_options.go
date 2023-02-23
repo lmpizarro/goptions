@@ -311,17 +311,15 @@ func MakeRegression(points [][9]float64, observer string, description string) {
 func MakeIVAverage(points [][9]float64) float64{
 	// See https://github.com/sajari/regression
 	// "K ", e[2], "T (days) ", e[4],  "Price ", e[3], "IV ", e[5]
-	var observed float64
 	var counter int
-	var mean_observed float64
+	var mean float64
 
-	mean_observed = 0
+	mean = 0
 	for i, point := range points {
-		observed = point[5]
 		counter = i
-		mean_observed += observed
+		mean += point[5]
 	}
 
-	return mean_observed/float64(counter)
+	return mean/float64(counter)
 
 }
