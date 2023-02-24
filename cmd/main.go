@@ -15,7 +15,7 @@ func main() {
 
 		future_spy := libs.Future{SymbolSpot: "^GSPC", Maturity: "2023-03-23", SymbolFuture: "ESH23.CME"}
 
-		libs.ImpliedRate(&future_spy)
+		libs.ImpliedRateNYSE(&future_spy)
 		fmt.Printf("S SPY A %.2f R %.2f F %.2f S %.2f \n",
 			100*future_spy.Rate,
 			100*future_spy.YearImpliedRate,
@@ -23,12 +23,7 @@ func main() {
 			future_spy.PriceSpot)
 
 		future_ggal := libs.Future{SymbolSpot: "GGAL.BA", Maturity: "2023-04-28", SymbolFuture: "GGAL/ABR23"}
-		symbol := libs.Symbol(future_ggal.SymbolSpot)
-		future_ggal.PriceSpot = symbol.Price()
-		future_ggal.TimeToMaturity = libs.YearsToMat(future_ggal.Maturity)
-		fut, _ := rfx.LastPrice(future_ggal.SymbolFuture, token)
-		future_ggal.PriceFuture = fut
-		libs.Rates(&future_ggal)
+		libs.ImpliedRateRFX(&future_ggal, token)
 		fmt.Printf("S GGAL A %.2f R %.2f F %.2f S %.2f\n",
 			100*future_ggal.Rate,
 			100*future_ggal.YearImpliedRate,

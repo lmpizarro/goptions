@@ -3,6 +3,8 @@ package libs
 import (
 	"math"
 	"time"
+
+	"lmpizarro/options/rfx"
 )
 
 func TtmInDays(in_seconds int64) int64 {
@@ -44,7 +46,7 @@ func YearsToMat(date string) float64 {
 	return float64(TtmInDays(t_seconds)) / 365.0
 }
 
-func ImpliedRate(future *Future) {
+func ImpliedRateNYSE(future *Future) {
 
 	spot := RegularMarketPrice(future.SymbolSpot)
 	fut := RegularMarketPrice(future.SymbolFuture)
@@ -52,6 +54,15 @@ func ImpliedRate(future *Future) {
 	future.PriceSpot = spot
 	future.PriceFuture = fut
 	future.TimeToMaturity = YearsToMat(future.Maturity)
+	Rates(future)
+}
+
+func ImpliedRateRFX(future *Future, token string) {
+	symbol := Symbol(future.SymbolSpot)
+	future.PriceSpot = symbol.Price()
+	future.TimeToMaturity = YearsToMat(future.Maturity)
+	fut, _ := rfx.LastPrice(future.SymbolFuture, token)
+	future.PriceFuture = fut
 	Rates(future)
 }
 
