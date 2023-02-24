@@ -21,17 +21,22 @@ func ParserStringDate(date string) (time.Time, int64) {
 }
 
 type Future struct {
-	Symbol   string
-	Maturity string
-	Futu     string
+	SymbolSpot      string
+	Maturity        string
+	SymbolFuture    string
+	PriceSpot       float64
+	PriceFuture     float64
+	YearImpliedRate float64
+	Rate            float64
+	TimeToMaturity  float64
 }
 
-func Rates(fut, spot, years_to_mat float64) (float64, float64) {
-	implied_rate := math.Pow(fut/spot, 1/years_to_mat) - 1
+func Rates(fut *Future) {
 
-	percent := (fut - spot) / spot
+	fut.YearImpliedRate = math.Pow(fut.PriceFuture/fut.PriceSpot, 1/fut.TimeToMaturity) - 1
 
-	return implied_rate, percent
+	fut.Rate = (fut.PriceFuture - fut.PriceSpot) / fut.PriceSpot
+
 }
 
 func YearsToMat(date string) float64 {
@@ -39,14 +44,15 @@ func YearsToMat(date string) float64 {
 	return float64(TtmInDays(t_seconds)) / 365.0
 }
 
-func ImpliedRate(future *Future) (float64, float64, float64, float64) {
+func ImpliedRate(future *Future) {
 
-	spot := RegularMarketPrice(future.Symbol)
-	fut := RegularMarketPrice(future.Futu)
+	spot := RegularMarketPrice(future.SymbolSpot)
+	fut := RegularMarketPrice(future.SymbolFuture)
 
-	ir, abcPct := Rates(fut, spot, YearsToMat(future.Maturity))
-
-	return ir, abcPct, fut, spot
+	future.PriceSpot = spot
+	future.PriceFuture = fut
+	future.TimeToMaturity = YearsToMat(future.Maturity)
+	Rates(future)
 }
 
 func CclAAPL() float64 {

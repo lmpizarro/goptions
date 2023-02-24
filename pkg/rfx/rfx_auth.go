@@ -62,3 +62,10 @@ func Token(user, password string) string {
 	token := res.Header["X-Auth-Token"]
 	return token[0]
 }
+
+func Login() string{
+	cred := ReadCredentials("./env.csv", false)
+	user := cred.User
+	password := cred.Password
+	return Token(user, password)
+}

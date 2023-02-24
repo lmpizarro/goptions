@@ -4,28 +4,43 @@ import (
 	"fmt"
 	"lmpizarro/options/libs"
 	"lmpizarro/options/rfx"
+	"time"
 )
 
 func main() {
 
-	cred := rfx.ReadCredentials("./env.csv", false)
-	user := cred.User
-	password := cred.Password
-	token := rfx.Token(user, password)
+	for {
 
-	future_spy := libs.Future{Symbol: "^GSPC", Maturity: "2023-03-23", Futu: "ESH23.CME"}
-	future_ggal := libs.Future{Symbol: "GGAL.BA", Maturity: "2023-04-28", Futu: "GGAL/ABR23"}
+		token := rfx.Login()
 
-	implied_rate, absPct, fut, spot := libs.ImpliedRate(&future_spy)
-	fmt.Printf("PC SPY %.2f Implied %.2f F %.2f S %.2f \n", 100*absPct, 100*implied_rate, fut, spot)
+		future_spy := libs.Future{SymbolSpot: "^GSPC", Maturity: "2023-03-23", SymbolFuture: "ESH23.CME"}
 
-	symbol := libs.Symbol(future_ggal.Symbol)
-	spot = symbol.Price()
-	years_to_mat := libs.YearsToMat(future_ggal.Maturity)
-	fut, _ = rfx.LastPrice(future_ggal.Futu, token)
-	iR, pCt := libs.Rates(fut, spot, years_to_mat)
-	fmt.Printf("PC GGAL %.2f Implied %.2f F %.2f S %.2f\n", 100*pCt, 100*iR, fut, spot)
-	libs.Test_YF()
+		libs.ImpliedRate(&future_spy)
+		fmt.Printf("S SPY A %.2f R %.2f F %.2f S %.2f \n",
+			100*future_spy.Rate,
+			100*future_spy.YearImpliedRate,
+			future_spy.PriceFuture,
+			future_spy.PriceSpot)
+
+		future_ggal := libs.Future{SymbolSpot: "GGAL.BA", Maturity: "2023-04-28", SymbolFuture: "GGAL/ABR23"}
+		symbol := libs.Symbol(future_ggal.SymbolSpot)
+		future_ggal.PriceSpot = symbol.Price()
+		future_ggal.TimeToMaturity = libs.YearsToMat(future_ggal.Maturity)
+		fut, _ := rfx.LastPrice(future_ggal.SymbolFuture, token)
+		future_ggal.PriceFuture = fut
+		libs.Rates(&future_ggal)
+		fmt.Printf("S GGAL A %.2f R %.2f F %.2f S %.2f\n",
+			100*future_ggal.Rate,
+			100*future_ggal.YearImpliedRate,
+			future_ggal.PriceFuture,
+			future_ggal.PriceSpot)
+
+		fmt.Printf("C %.2f\n\n", libs.Ccl())
+		libs.Test_YF()
+		fmt.Printf("---------------------\n\n")
+		time.Sleep(5000 * time.Millisecond)
+
+	}
 	panic("main")
 
 	fmt.Println(libs.Ccl())
